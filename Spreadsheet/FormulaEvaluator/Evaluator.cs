@@ -33,7 +33,7 @@ public static class Evaluator {
                         int topValue = values.Pop();
                         topOperator = operators.Pop();
 
-                        int result = Operate(topValue, topOperator, intToken);
+                        int result = Operate(intToken, topOperator, topValue);
                         values.Push(result);
                     } else { values.Push(intToken); }
                 }
@@ -56,7 +56,7 @@ public static class Evaluator {
                         int result = Operate(value1, topOperator, value2);
                         values.Push(result);
 
-                        operators.Push(token);
+                        //operators.Push(token);
                     }
                 }
                 operators.Push(token);
@@ -88,9 +88,19 @@ public static class Evaluator {
                     if (operators.Peek() == "("){
                         operators.Pop();
                     }
-                    else {
-                        throw new ArgumentException("Bad expression");
+                    if (operators.Count() > 0) {
+                        topOperator = operators.Peek();
+                        if (topOperator == "*" || topOperator == "/") {
+                            value1 = values.Pop();
+                            value2 = values.Pop();
+                            topOperator = operators.Pop();
+
+                            result = Operate(value1, topOperator, value2);
+
+                            values.Push(result);
+                        }
                     }
+
                 }
                 else if (topOperator == "*" || topOperator == "/") {
 
@@ -135,14 +145,14 @@ public static class Evaluator {
             case "+":
                 return value1 + value2;
             case "-":
-                return value1 - value2;
+                return value2 - value1;
             case "*":
                 return value1 * value2;
             case "/":
                 if (value2 == 0) {
                     throw new ArgumentException("Illegal: division by zero");
                 }
-                return value1 / value2; //Integer division 
+                return value2 / value1; //Integer division 
             default:
                 throw new ArgumentException("Illegal operator");
         }
