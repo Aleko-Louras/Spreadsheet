@@ -1,44 +1,72 @@
-﻿///
+﻿
+// Lookup method for delegate
+using static System.Net.Mime.MediaTypeNames;
+///
 /// A test program for the Evaluator class
 ///
 /// 
 ///
-string expression = "( 2 + 35 )"; // 37
-string expression2 = "(2 + 3) / 2 + 2"; // 4
-string expression3 = " 2/ 0"; // Error: Divide by Zero
-string expression4 = ""; // Error: Empty/Bad Argument
-string expression5 = "((2+2)+2)"; //6
 
-// Lookup method
-
+// Lookup method for delegate
 static int variableLookup(string v) {
     return 1;
 }
 
 string[] testExpressions = {
-    "5 + 3", //8
-    "4 * 7 - 2", // 26
-    "9 / 3 + 2 * 8", // 19
-    "(6 - 2) * 5", // 20
-    "7 + 3 / 2", // 8
-    "8 * (4 + 6)", // 80
-    "(12 - 5) / 2", // 3
-    "3 + 4 * (6 - 2)", //19
-    "5 / 2 + 7 - 1", // 8
-    "(9 + 3) / (4 - 1) * 2", //8
-    "A7", //1
-    "A99 + 3 * 4" //13
+    // Addition, Subtraction, Multiplication and Division
+    "7-24/8*4+6", // Expected: 1
+    "18 / 3-7+2 * 5", // Expected:  9
+    "6 * 4 / 12 + 72 / 8 - 9", // Expected: 2
+
+    // Four operators and parenthesis
+    "(17 - 6 / 2) + 4 * 3", // Expected: 26
+    "7 + 3 / 2", // Expected: 8
+    "8 * (4 + 6)", // Expected: 80 
+    "(12 - 5) / 2", // Expected: 3
+    "3 + 4 * (6 - 2)", //Expected: 19
+    "5 / 2 + 7 - 1", // Expected: 8
+    "(9 + 3) / (4 - 1) * 2", // Expected: 8
+
+    //Expressions with variables
+    "A7", // Expected: 1
+    "A99 + 3 * 4", // Expected: 13
+    "(2 + c6) * 5 + 2", // Expected: 17
+    "(2 + AA6) * 5 + 2", // Expected: 17
+    "5", // Expected: 5
+    "(A6 * A6 + A6 * A6) * A6", // Expected: 2
+
+    // Expressions with parens in the middle
+    "7 * (6 / 2) + 9", // Expected: 30
+    "4 * (2 + 3) / 2", // Expected: 10
+    "3 * (2 + 4) - 7" // Expected: 11
 
 };
+int[] answers = new int[19];
 
-//Test the expression splitter
-string[] splitExpression = FormulaEvaluator.Evaluator.SplitExpression(expression);
-foreach (string item in splitExpression) {
-    //Console.WriteLine(item);
+//Test valid expressions
+for (int i = 0; i < testExpressions.Length; i++) {
+    answers[i] = (FormulaEvaluator.Evaluator.Evaluate(testExpressions[i], variableLookup));
 }
 
-foreach(string test in testExpressions) {
-    Console.WriteLine(FormulaEvaluator.Evaluator.Evaluate(test, variableLookup));
-}
+int[] myAnswers = { 1, 9, 2, 26, 8, 80, 3, 19, 8, 8, 1, 13, 17, 17, 5, 2, 30, 10, 11 };
+
+Console.WriteLine(Enumerable.SequenceEqual(answers, myAnswers));
+    
+//Test invalied espessions
+
+//FormulaEvaluator.Evaluator.Evaluate("+", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("-", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("*", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("/", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("-5", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("&&&&", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate(" (3 & 2) + 1", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("3.2 + 5.2", variableLookup);
+
+
+
+
+
+
 
 Console.Read();

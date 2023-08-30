@@ -2,6 +2,9 @@
 /// Evaluator.cs
 /// FormulaEvaluator
 ///
+/// This class defines a method for evaluating simple infix
+/// arithmetic expressions.
+/// 
 /// Created 8/27/23
 ///
 
@@ -12,26 +15,37 @@ namespace FormulaEvaluator;
 public static class Evaluator {
     public delegate int Lookup(String v);
 
+    /// <summary>
+    /// Evaluate returns an integer result for simple arithmetic expressions.
+    /// The only legal tokens are the four operator symbols + - * /, left and
+    /// right parenthesis, non-negtive integers, whitespace, and variables which
+    /// consist of one or more letters followed by one or more digits. 
+    /// </summary>
+    /// <param name="exp"> The arithmetic expression</param>
+    /// <param name="variableEvaluator"> A function for variable Evaluation</param>
+    /// <returns> The integer result of the expression </returns>
+    /// <exception cref="Exception"></exception>
     public static int Evaluate(String exp, Lookup variableEvaluator) { 
 
         Stack<int> values = new Stack<int>();
         Stack<string> operators = new Stack<string>();
 
         string[] tokens = SplitExpression(exp);
+        if(tokens.Length < 1) {
+            throw new ArgumentException("The expression must contain values");
+        }
 
         foreach (string token in tokens) {
             
             if (String.IsNullOrEmpty(token)) {
                 continue;
             }
-            // Variable lookup 
-            char firstChar = token[0];
 
-            //Variable case, assuming that variables only return integers
-            if (char.IsLetter(firstChar)) {
+            //Variable case, lookup the variable, the procede as in integer case.
+            if (char.IsLetter(token[0])) {
                 int varValue = variableEvaluator(token);
                 
-                if (values.Count > 0) {
+                if (values.Count > 0) { // Don't pop from an empty stack
                     string topOperator = operators.Peek();
 
                     if (topOperator == "*" || topOperator == "/") {
@@ -49,7 +63,7 @@ public static class Evaluator {
 
             // Integer case 
             if (int.TryParse(token, out int intToken)) {
-                if (values.Count > 0) {
+                if (values.Count > 0) {  // Don't pop from empty stack
                     string topOperator = operators.Peek();
 
                     if (topOperator == "*" || topOperator == "/") {
@@ -78,7 +92,6 @@ public static class Evaluator {
                         int result = Operate(value1, topOperator, value2);
                         values.Push(result);
 
-                        //operators.Push(token);
                     }
                 }
                 operators.Push(token);
@@ -93,52 +106,63 @@ public static class Evaluator {
                 operators.Push(token);
             }
             else if (token == ")") {
-                string topOperator = operators.Peek();
-                if (topOperator == "+" || topOperator == "-") {
-                    if (values.Count < 2) {
+                if (operators.Count > 0) {
+                    string topOperator = operators.Peek();
+                    if (topOperator == "+" || topOperator == "-") {
+
+                        int value1 = values.Pop();
+                        int value2 = values.Pop();
+                        topOperator = operators.Pop();
+
+                        int result = Operate(value1, topOperator, value2);
+
+                        values.Push(result);
+
+                        if (operators.Peek() == "(") {
+                            operators.Pop();
+                        }
+                        if (operators.Count() > 0) {
+                            topOperator = operators.Peek();
+                            if (topOperator == "*" || topOperator == "/") {
+                                value1 = values.Pop();
+                                value2 = values.Pop();
+                                topOperator = operators.Pop();
+
+                                result = Operate(value1, topOperator, value2);
+
+                                values.Push(result);
+                            }
+                        }
 
                     }
-
-                    int value1 = values.Pop();
-                    int value2 = values.Pop();
-                    topOperator = operators.Pop();
-
-                    int result = Operate(value1, topOperator, value2);
-
-                    values.Push(result);
-
-                    if (operators.Peek() == "(") {
+                    if (topOperator == "(") {
                         operators.Pop();
+                        if (operators.Count > 0) {
+                            topOperator = operators.Peek();
+                        }
                     }
-                    if (operators.Count() > 0) {
-                        topOperator = operators.Peek();
+                    if (operators.Count > 0) {
                         if (topOperator == "*" || topOperator == "/") {
-                            value1 = values.Pop();
-                            value2 = values.Pop();
+
+                            int value1 = values.Pop();
+                            int value2 = values.Pop();
                             topOperator = operators.Pop();
 
-                            result = Operate(value1, topOperator, value2);
+                            int result = Operate(value1, topOperator, value2);
 
                             values.Push(result);
                         }
                     }
-
-                }
-                else if (topOperator == "*" || topOperator == "/") {
-
-                    int value1 = values.Pop();
-                    int value2 = values.Pop();
-                    topOperator = operators.Pop();
-
-                    int result = Operate(value1, topOperator, value2);
-
-                    values.Push(result);
                 }
             }      
         }
 
         if (operators.Count == 0) {
-            return values.Pop();
+            if (values.Count == 1) {
+                return values.Pop();
+            } else {
+                throw new ArgumentException("Failed to evaluate expression: Did you enter a valid expression?");
+            }
         }
         else if (operators.Count == 1 && values.Count == 2) {
             int value1 = values.Pop();
@@ -147,7 +171,7 @@ public static class Evaluator {
 
             return Operate(value1, topOperator, value2);
         }
-        else throw new Exception("Failed to evaluate expression");
+        else throw new ArgumentException("Failed to evaluate expression: Did you enter a valid expression?");
     }
 
     public static string[] SplitExpression(string exp) {
@@ -171,7 +195,7 @@ public static class Evaluator {
             case "*":
                 return value1 * value2;
             case "/":
-                if (value2 == 0) {
+                if (value1 == 0) {
                     throw new ArgumentException("Illegal: division by zero");
                 }
                 return value2 / value1; //Integer division 
