@@ -12,7 +12,7 @@ namespace FormulaEvaluator;
 public static class Evaluator {
     public delegate int Lookup(String v);
 
-    public static int Evaluate(String exp) { //,Lookup variableEvaluator
+    public static int Evaluate(String exp, Lookup variableEvaluator) { 
 
         Stack<int> values = new Stack<int>();
         Stack<string> operators = new Stack<string>();
@@ -20,9 +20,32 @@ public static class Evaluator {
         string[] tokens = SplitExpression(exp);
 
         foreach (string token in tokens) {
+            
             if (String.IsNullOrEmpty(token)) {
                 continue;
             }
+            // Variable lookup 
+            char firstChar = token[0];
+
+            //Variable case, assuming that variables only return integers
+            if (char.IsLetter(firstChar)) {
+                int varValue = variableEvaluator(token);
+                
+                if (values.Count > 0) {
+                    string topOperator = operators.Peek();
+
+                    if (topOperator == "*" || topOperator == "/") {
+                        int topValue = values.Pop();
+                        topOperator = operators.Pop();
+
+                        int result = Operate(varValue, topOperator, topValue);
+                        values.Push(result);
+                    }
+                    else { values.Push(varValue); }
+                }
+                else { values.Push(varValue); }
+            }
+
 
             // Integer case 
             if (int.TryParse(token, out int intToken)) {
@@ -35,12 +58,11 @@ public static class Evaluator {
 
                         int result = Operate(intToken, topOperator, topValue);
                         values.Push(result);
-                    } else { values.Push(intToken); }
+                    }
+                    else { values.Push(intToken); }
                 }
                 else { values.Push(intToken); }
             }
-
-            // Variable case
 
             // + or - case
 
@@ -85,7 +107,7 @@ public static class Evaluator {
 
                     values.Push(result);
 
-                    if (operators.Peek() == "("){
+                    if (operators.Peek() == "(") {
                         operators.Pop();
                     }
                     if (operators.Count() > 0) {
