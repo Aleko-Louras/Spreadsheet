@@ -51,7 +51,7 @@ for (int i = 0; i < testExpressions.Length; i++) {
 int[] myAnswers = { 1, 9, 2, 26, 8, 80, 3, 19, 8, 8, 1, 13, 17, 17, 5, 2, 30, 10, 11 };
 
 Console.WriteLine(Enumerable.SequenceEqual(answers, myAnswers));
-    
+
 //Test invalied espessions
 
 //FormulaEvaluator.Evaluator.Evaluate("+", variableLookup);
@@ -62,6 +62,8 @@ Console.WriteLine(Enumerable.SequenceEqual(answers, myAnswers));
 //FormulaEvaluator.Evaluator.Evaluate("&&&&", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate(" (3 & 2) + 1", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("3.2 + 5.2", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("3.2 + 5.2", variableLookup);
+FormulaEvaluator.Evaluator.Evaluate("3+ 4 5 + ", variableLookup);
 
 
 
