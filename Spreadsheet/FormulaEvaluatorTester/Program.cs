@@ -63,11 +63,13 @@ Console.WriteLine(Enumerable.SequenceEqual(answers, myAnswers));
 //FormulaEvaluator.Evaluator.Evaluate(" (3 & 2) + 1", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("3.2 + 5.2", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("3.2 + 5.2", variableLookup);
-FormulaEvaluator.Evaluator.Evaluate("3+ 4 5 + ", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("3+ 4 5 + ", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate(") + 5 ", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("A B C D ", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("This is the way ", variableLookup);
 
-
-
-
+//ISSUE:
+FormulaEvaluator.Evaluator.Evaluate("A6 B5 D6 ", variableLookup);
 
 
 
