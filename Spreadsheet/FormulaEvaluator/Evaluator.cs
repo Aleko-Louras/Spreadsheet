@@ -104,35 +104,24 @@ public static class Evaluator {
 
             //Right parenthesis case
             else if (token == ")") {
-                if (operators.Count > 0) { 
+                if (operators.Count > 0) {
                     string topOperator = operators.Peek();
-                    if (topOperator == "+" || topOperator == "-") { 
+                    if (topOperator == "+" || topOperator == "-") {
                         if (values.Count >= 2) {
-                            
+
                             int result = FullOperate(values, operators);
                             values.Push(result);
-                        }
-
-                        if (operators.Count > 0 && operators.Peek() == "(") {
-                            operators.Pop();
-                        }
-                        if (operators.Count() > 0) {
                             topOperator = operators.Peek();
-                            if (topOperator == "*" || topOperator == "/") {
-                                if (values.Count >= 2) {
-                                    int result = FullOperate(values, operators);
-
-                                    values.Push(result);
-                                }
-                            }
                         }
                     }
+
                     if (topOperator == "(") {
                         operators.Pop();
                         if (operators.Count > 0) {
                             topOperator = operators.Peek();
                         }
                     }
+                    else { throw new ArgumentException(); }
                     if (operators.Count > 0) {
                         if (topOperator == "*" || topOperator == "/") {
                             if (values.Count >= 2) {
@@ -143,6 +132,8 @@ public static class Evaluator {
                         }
                     }
                 }
+                else throw new ArgumentException();
+               
             }
         }
 
@@ -157,7 +148,10 @@ public static class Evaluator {
             }
         }
         else if (operators.Count == 1 && values.Count == 2) {
-            return FullOperate(values, operators);
+            if (operators.Peek() == "+" || operators.Peek() == "-") {
+                return FullOperate(values, operators);
+            }
+            else throw new ArgumentException("Failed to evaluate expression: Did you enter a valid expression?");
         }
         else throw new ArgumentException("Failed to evaluate expression: Did you enter a valid expression?");
     }

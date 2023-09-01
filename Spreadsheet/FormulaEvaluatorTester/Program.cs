@@ -1,6 +1,6 @@
 ﻿
-// Lookup method for delegate
 using static System.Net.Mime.MediaTypeNames;
+
 ///
 /// A test program for the Evaluator class
 ///
@@ -53,24 +53,36 @@ int[] myAnswers = { 1, 9, 2, 26, 8, 80, 3, 19, 8, 8, 1, 13, 17, 17, 5, 2, 30, 10
 
 Console.WriteLine(Enumerable.SequenceEqual(answers, myAnswers));
 
-//Test invalied espessions
 
-FormulaEvaluator.Evaluator.Evaluate("", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("+", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("-", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("*", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("/", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("-5", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("&&&&", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate(" (3 & 2) + 1", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("3.2 + 5.2", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("3.2 + 5.2", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("3+ 4 5 + ", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate(") + 5 ", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("A B C D ", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("This is the way ", variableLookup);
-//FormulaEvaluator.Evaluator.Evaluate("A6 B5 D6 ", variableLookup);
 
+
+//Test invalid espessions
+string[] invalidExpressions = new string[] {
+    "(((((())))))",
+    "+",
+    "A B C D",
+    "(",
+    ")",
+    "(1",
+    "1)",
+    "1+1)",
+    "This is the way",
+    ") + 5",
+    "(5+5))"
+};
+
+int errorCounter = 0;
+for (int i = 0; i < invalidExpressions.Length; i++) {
+   try {
+        int result = FormulaEvaluator.Evaluator.Evaluate(invalidExpressions[i], variableLookup);
+    } catch (Exception e) {
+        errorCounter += 1;
+    }
+}
+
+if (errorCounter == 11) {
+    Console.WriteLine(true);
+}
 
 
 Console.Read();
