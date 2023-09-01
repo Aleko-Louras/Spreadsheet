@@ -31,10 +31,7 @@ public static class Evaluator {
         Stack<string> operators = new Stack<string>();
 
         string[] tokens = SplitExpression(exp);
-        //if (tokens.Length < 1) {
-        //    throw new ArgumentException("The expression must contain values");
-        //}
-
+        
         foreach (string token in tokens) {
             if (String.IsNullOrEmpty(token)) {
                 continue;
@@ -42,9 +39,9 @@ public static class Evaluator {
 
             //Variable case, lookup the variable, then procede as in integer case.
             if (isVarialbe(token)) {
-                int varValue = variableEvaluator(token);
+                int varValue = variableEvaluator(token); //Variable evaluation is handled by delegated function
 
-                if (operators.Count > 0) { // Don't pop from an empty stack
+                if (operators.Count > 0) { 
                     string topOperator = operators.Peek();
 
                     if (topOperator == "*" || topOperator == "/") {
@@ -64,7 +61,7 @@ public static class Evaluator {
 
             // Integer case 
             if (int.TryParse(token, out int intToken)) {
-                if (operators.Count > 0) {  // Don't pop from empty stack
+                if (operators.Count > 0) { 
                     string topOperator = operators.Peek();
 
                     if (topOperator == "*" || topOperator == "/") {
