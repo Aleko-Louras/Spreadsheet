@@ -51,37 +51,50 @@ for (int i = 0; i < testExpressions.Length; i++) {
 
 int[] myAnswers = { 1, 9, 2, 26, 8, 80, 3, 19, 8, 8, 1, 13, 17, 17, 5, 2, 30, 10, 11, 16 };
 
-Console.WriteLine(Enumerable.SequenceEqual(answers, myAnswers));
+if(Enumerable.SequenceEqual(answers, myAnswers)) {
+    Console.WriteLine("All valid expressions return the correct result");
+} else {
+    Console.WriteLine("TEST FAILED: NOT ALL VALID EXPRESSIONS RETURN CORRECLTY");
+}
 
 
 
 
-//Test invalid espessions
+//Test invalid expressions
 string[] invalidExpressions = new string[] {
     "(((((())))))",
     "+",
     "A B C D",
+    "1 2 3",
     "(",
     ")",
     "(1",
     "1)",
     "1+1)",
+    "7 (5)",
+    "6 + ( + 4)",
     "This is the way",
     ") + 5",
-    "(5+5))"
+    "(5+5))",
+    " 1/ 0",
+    "0 / 0",
+    " 1 + + 1",
+    "-1 - 1"
 };
 
 int errorCounter = 0;
 for (int i = 0; i < invalidExpressions.Length; i++) {
    try {
         int result = FormulaEvaluator.Evaluator.Evaluate(invalidExpressions[i], variableLookup);
-    } catch (Exception e) {
+    } catch (ArgumentException e) {
         errorCounter += 1;
     }
 }
 
-if (errorCounter == 11) {
-    Console.WriteLine(true);
+if (errorCounter == 18) {
+    Console.WriteLine("All invalid expressions throw properly");
+} else {
+    Console.WriteLine("INVALID EXPRESSION TEST FAILED");
 }
 
 

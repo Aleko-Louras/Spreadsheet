@@ -111,7 +111,10 @@ public static class Evaluator {
 
                             int result = FullOperate(values, operators);
                             values.Push(result);
-                            topOperator = operators.Peek();
+
+                            if (operators.Count > 0) {
+                                topOperator = operators.Peek();
+                            }
                         }
                     }
 
