@@ -24,16 +24,16 @@ public static class Evaluator {
     /// <param name="exp"> The arithmetic expression</param>
     /// <param name="variableEvaluator"> A function for variable Evaluation</param>
     /// <returns> The integer result of the expression </returns>
-    /// <exception cref="Exception"></exception>
+    /// <exception cref="ArgumentException"> if the expression can not be evaluated</exception>
     public static int Evaluate(String exp, Lookup variableEvaluator) {
 
         Stack<int> values = new Stack<int>();
         Stack<string> operators = new Stack<string>();
 
         string[] tokens = SplitExpression(exp);
-        if (tokens.Length < 1) {
-            throw new ArgumentException("The expression must contain values");
-        }
+        //if (tokens.Length < 1) {
+        //    throw new ArgumentException("The expression must contain values");
+        //}
 
         foreach (string token in tokens) {
             if (String.IsNullOrEmpty(token)) {
@@ -164,7 +164,13 @@ public static class Evaluator {
         }
         else throw new ArgumentException("Failed to evaluate expression: Did you enter a valid expression?");
     }
-
+    /// <summary>
+    /// Splits a given string into tokens
+    ///
+    /// This regex provided by Prof. Travis Martin
+    /// </summary>
+    /// <param name="exp" The expression to split></param>
+    /// <returns></returns>
     public static string[] SplitExpression(string exp) {
 
         string[] substrings = Regex.Split(exp, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
@@ -175,6 +181,14 @@ public static class Evaluator {
         return substrings;
     }
 
+    /// <summary>
+    /// Applies an operator string to the two provided values
+    /// </summary>
+    /// <param name="value1"></param>
+    /// <param name="op"></param>
+    /// <param name="value2"></param>
+    /// <returns>The integer result of the operation</returns>
+    /// <exception cref="ArgumentException"></exception>
     static int HalfOperate(int value1, string op, int value2) {
 
         switch (op) {
@@ -193,7 +207,13 @@ public static class Evaluator {
                 throw new ArgumentException("Illegal operator");
         }
     }
-
+    /// <summary>
+    /// Applies the given operator to top to values in the provided stack
+    /// </summary>
+    /// <param name="values"> The stack of values</param>
+    /// <param name="operators">The operation to be performed </param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     static int FullOperate(Stack<int> values, Stack<string> operators) {
         int value1 = values.Pop();
         int value2 = values.Pop();
@@ -217,6 +237,12 @@ public static class Evaluator {
         }
     }
 
+    /// <summary>
+    /// Returns true of the token string matches the variable pattern of
+    /// one or more letters followed by one ore more digits.
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
     static bool isVarialbe(string token) {
         string variablepattern = "^[A-Za-z]+\\d+$";
         return Regex.IsMatch(token, variablepattern);

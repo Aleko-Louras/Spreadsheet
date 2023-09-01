@@ -38,23 +38,24 @@ string[] testExpressions = {
     // Expressions with parens in the middle
     "7 * (6 / 2) + 9", // Expected: 30
     "4 * (2 + 3) / 2", // Expected: 10
-    "3 * (2 + 4) - 7" // Expected: 11
+    "3 * (2 + 4) - 7", // Expected: 11
+    "((1 * 2 + (3*4) + (5*6)  +34  - 1 - 1 -1) /5) + AAABBBBCCCC1111222233334444 " // Expected 16
 
 };
-int[] answers = new int[19];
+int[] answers = new int[20];
 
 //Test valid expressions
 for (int i = 0; i < testExpressions.Length; i++) {
     answers[i] = (FormulaEvaluator.Evaluator.Evaluate(testExpressions[i], variableLookup));
 }
 
-int[] myAnswers = { 1, 9, 2, 26, 8, 80, 3, 19, 8, 8, 1, 13, 17, 17, 5, 2, 30, 10, 11 };
+int[] myAnswers = { 1, 9, 2, 26, 8, 80, 3, 19, 8, 8, 1, 13, 17, 17, 5, 2, 30, 10, 11, 16 };
 
 Console.WriteLine(Enumerable.SequenceEqual(answers, myAnswers));
 
 //Test invalied espessions
 
-//FormulaEvaluator.Evaluator.Evaluate("", variableLookup);
+FormulaEvaluator.Evaluator.Evaluate("", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("+", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("-", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("*", variableLookup);
