@@ -54,6 +54,7 @@ Console.WriteLine(Enumerable.SequenceEqual(answers, myAnswers));
 
 //Test invalied espessions
 
+//FormulaEvaluator.Evaluator.Evaluate("", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("+", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("-", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("*", variableLookup);
@@ -67,9 +68,7 @@ Console.WriteLine(Enumerable.SequenceEqual(answers, myAnswers));
 //FormulaEvaluator.Evaluator.Evaluate(") + 5 ", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("A B C D ", variableLookup);
 //FormulaEvaluator.Evaluator.Evaluate("This is the way ", variableLookup);
-
-//ISSUE:
-FormulaEvaluator.Evaluator.Evaluate("A6 B5 D6 ", variableLookup);
+//FormulaEvaluator.Evaluator.Evaluate("A6 B5 D6 ", variableLookup);
 
 
 

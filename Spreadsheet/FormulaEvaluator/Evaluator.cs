@@ -218,7 +218,7 @@ public static class Evaluator {
     }
 
     static bool isVarialbe(string token) {
-        string variablepattern = "^[A-Za-z]+[0-9]+";
+        string variablepattern = "^[A-Za-z]+\\d+$";
         return Regex.IsMatch(token, variablepattern);
     }
 }
