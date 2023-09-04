@@ -84,7 +84,12 @@ string[] invalidExpressions = new string[] {
     "0 / 0",
     " 1 + + 1",
     "-1 - 1",
-    "1(2+3)"
+    "1(2+3)",
+    "+6",
+    " 235 ^ 235",
+    "234$$242",
+    "(-5)",
+    "97(5)",
 };
 
 int errorCounter = 0;
@@ -96,11 +101,10 @@ for (int i = 0; i < invalidExpressions.Length; i++) {
     }
 }
 
-if (errorCounter == 20) {
+if (errorCounter == 25) {
     Console.WriteLine("All invalid expressions throw properly");
-} else {
+}
+else {
     Console.WriteLine("INVALID EXPRESSION TEST FAILED");
 }
-
-
 Console.Read();

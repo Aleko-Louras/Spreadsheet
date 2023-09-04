@@ -38,13 +38,13 @@ public static class Evaluator {
             }
 
             //Variable case, lookup the variable, then procede as in integer case.
-            if (isVarialbe(token)) {
+            if (isVariable(token)) {
                 int varValue = variableEvaluator(token); //Variable evaluation is handled by delegated function
 
                 if (operators.Count > 0) { 
                     string topOperator = operators.Peek();
 
-                    if (topOperator == "*" || topOperator == "/") {
+                    if (isMultiplyOrDivide(topOperator)) {
                         if (values.Count >= 1) {
                             int topValue = values.Pop();
                             topOperator = operators.Pop();
@@ -64,7 +64,7 @@ public static class Evaluator {
                 if (operators.Count > 0) { 
                     string topOperator = operators.Peek();
 
-                    if (topOperator == "*" || topOperator == "/") {
+                    if (isMultiplyOrDivide(topOperator)) {
                         if (values.Count >= 1) {
                             int topValue = values.Pop();
                             topOperator = operators.Pop();
@@ -79,10 +79,10 @@ public static class Evaluator {
             }
 
             // Additon or subtraction case
-            else if (token == "+" || token == "-") {
+            else if (isAddOrSubtract(token)) {
                 if (operators.Count > 0) {
                     string topOperator = operators.Peek();
-                    if (topOperator == "+" || topOperator == "-") {
+                    if (isAddOrSubtract(topOperator)) {
                         if (values.Count >= 2) {
                             int result = FullOperate(values, operators);
                             values.Push(result);
@@ -93,12 +93,12 @@ public static class Evaluator {
             }
 
             // Multiplication or division case
-            else if (token == "*" || token == "/") {
+            else if (isMultiplyOrDivide(token)) {
                 operators.Push(token);
             }
 
             // Left parenthesis case
-            else if (token == "(") {
+            else if (isOpenParen(token)) {
                 operators.Push(token);
             }
 
@@ -106,7 +106,7 @@ public static class Evaluator {
             else if (token == ")") {
                 if (operators.Count > 0) {
                     string topOperator = operators.Peek();
-                    if (topOperator == "+" || topOperator == "-") {
+                    if (isAddOrSubtract(topOperator)) {
                         if (values.Count >= 2) {
 
                             int result = FullOperate(values, operators);
@@ -118,7 +118,7 @@ public static class Evaluator {
                         }
                     }
 
-                    if (topOperator == "(") {
+                    if (isOpenParen(topOperator)) {
                         operators.Pop();
                         if (operators.Count > 0) {
                             topOperator = operators.Peek();
@@ -126,7 +126,7 @@ public static class Evaluator {
                     }
                     else { throw new ArgumentException(); }
                     if (operators.Count > 0) {
-                        if (topOperator == "*" || topOperator == "/") {
+                        if (isMultiplyOrDivide(topOperator)) {
                             if (values.Count >= 2) {
                                 int result = FullOperate(values, operators);
 
@@ -160,11 +160,10 @@ public static class Evaluator {
     }
     /// <summary>
     /// Splits a given string into tokens
-    ///
     /// This regex provided by Prof. Travis Martin
     /// </summary>
-    /// <param name="exp" The expression to split></param>
-    /// <returns></returns>
+    /// <param name="exp">The expression to split</param>
+    /// <returns>An array of the split strings</returns>
     public static string[] SplitExpression(string exp) {
 
         string[] substrings = Regex.Split(exp, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
@@ -206,7 +205,7 @@ public static class Evaluator {
     /// </summary>
     /// <param name="values"> The stack of values</param>
     /// <param name="operators">The operation to be performed </param>
-    /// <returns></returns>
+    /// <returns>The integer result of the operation</returns>
     /// <exception cref="ArgumentException"></exception>
     static int FullOperate(Stack<int> values, Stack<string> operators) {
         int value1 = values.Pop();
@@ -236,9 +235,48 @@ public static class Evaluator {
     /// one or more letters followed by one ore more digits.
     /// </summary>
     /// <param name="token"></param>
-    /// <returns></returns>
-    static bool isVarialbe(string token) {
+    /// <returns>A boolean result</returns>
+    private static bool isVariable(string token) {
         string variablepattern = "^[A-Za-z]+\\d+$";
         return Regex.IsMatch(token, variablepattern);
+    }
+    /// <summary>
+    /// Returns true if the given string is a "*" or a "/"
+    /// </summary>
+    /// <param name="token"> the string </param>
+    /// <returns>A boolean result</returns>
+    private static bool isMultiplyOrDivide(string token) {
+        if (token == "*" || token == "/") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    /// <summary>
+    /// Returns true if the given string is a "("
+    /// </summary>
+    /// <param name="token"> The string </param>
+    /// <returns>A boolean result</returns>
+    private static bool isOpenParen(string token) {
+        if (token == "(") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    /// <summary>
+    /// Returns true if the given string is a "+" or a "-"
+    /// </summary>
+    /// <param name="token"> The string</param>
+    /// <returns>A boolean result</returns>
+    private static bool isAddOrSubtract(string token) {
+        if (token == "+" || token == "-") {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }
