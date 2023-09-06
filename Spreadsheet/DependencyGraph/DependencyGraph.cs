@@ -234,17 +234,4 @@ public class DependencyGraph {
             AddDependency(dependee, s);
         }
     }
-
-    //private void AddDependent(string s, string t) {
-    //    if(!dependents.ContainsKey(s)) {
-    //        dependents[s] = new HashSet<string>();
-    //    }
-    //    dependents[s].Add(t);
-    //}
-    //private void AddDependee(string s, string t) {
-    //    if (!dependees.ContainsKey(s)) {
-    //        dependees[s].Add(s);
-    //    }
-    //    dependees[s].Add(t);
-    //}
 }
