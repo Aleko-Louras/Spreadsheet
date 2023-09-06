@@ -63,12 +63,13 @@ public class DependencyGraph {
     /// that is, the number of things that s depends on.
     /// </summary>
     public int NumDependees(string s) {
-        if (dependees.TryGetValue(s, out HashSet<string>? sDependees)) {
-            return sDependees.Count;
+        if (HasDependees(s)) {
+            return GetDependees(s).Count();
         }
         else {
             return 0;
         }
+
     }
 
 
@@ -79,7 +80,7 @@ public class DependencyGraph {
         if (dependents.TryGetValue(s, out HashSet<string>? sDependents)) {
             if (sDependents.Count > 0) {
                 return true;
-            } else { return false; }
+            } else { return false; } // If s is in dict, but has empty set
         }
         else { return false; }
     }
@@ -92,7 +93,7 @@ public class DependencyGraph {
         if (dependees.TryGetValue(s, out HashSet<string>? sDependees)) {
             if (sDependees.Count > 0) {
                 return true;
-            } else { return false; }
+            } else { return false; }// If s is in dict, but has empty set
         }
         else { return false; }
     }
@@ -103,8 +104,6 @@ public class DependencyGraph {
     /// </summary>
     public IEnumerable<string> GetDependents(string s) {
         if(HasDependents(s)) {
-            //dependents.TryGetValue(s, out HashSet<string>? sDependents);
-            //return sDependents;
             return dependents[s];
         }
         else {
@@ -123,8 +122,6 @@ public class DependencyGraph {
     /// </summary>
     public IEnumerable<string> GetDependees(string s) {
         if (HasDependees(s)) {
-            //dependees.TryGetValue(s, out HashSet<string>? sDependees);
-            //return sDependees;
             return dependees[s];
         }
         else {
@@ -134,7 +131,6 @@ public class DependencyGraph {
             else {
                 return new HashSet<string>();
             }
-            
         }
     }
 
@@ -155,18 +151,15 @@ public class DependencyGraph {
         //If the dependency does not already exist add it
         dependencies.Add(pair);
 
-        // If s is not already in dependents list add it, it now has t as
-        // as dependent.
-        // If s already has dependents at another for t
+        // Update dependents, who depends on s? t does.
         if (!dependents.ContainsKey(s)) {
             dependents.Add(s, new HashSet<string> {t});
         }
         else {
-            dependents[s].Add(t);
+            dependents[s].Add(t); // s already has dependents, add another for t
         }
 
-        // Also must update the dependees, t depends on s
-        // if t is not yet in the dependee list, add t with s.
+        // Update the dependees, t depends on s
         if(!dependees.ContainsKey(t)) {
             dependees.Add(t, new HashSet<string> {s});
         }
@@ -184,17 +177,11 @@ public class DependencyGraph {
     /// <param name="t"></param>
     public void RemoveDependency(string s, string t) {
         ValueTuple<string, string> pair = (s, t);
-        dependencies.Remove(pair);
 
-        // t was dependent on s but we removed that link
-        // so remove s from t's list of dependees
-
-        dependees[t].Remove(s);
-
-        // Then remove t from s's list of dependents
-
-        dependents[s].Remove(t);
-
+        if (dependencies.Remove(pair)) {
+            dependees[t].Remove(s);
+            dependents[s].Remove(t);
+        }
     }
 
 
@@ -207,9 +194,9 @@ public class DependencyGraph {
         List<ValueTuple<string, string>> removedDependencies =
             new();
 
-        foreach ((string,string) tuple in dependencies) {
-            if (tuple.Item1 == s) {
-                removedDependencies.Add(tuple);
+        foreach ((string,string) pair in dependencies) {
+            if (pair.Item1 == s) {
+                removedDependencies.Add(pair);
             }
         }
 
@@ -248,16 +235,16 @@ public class DependencyGraph {
         }
     }
 
-    private void AddDependent(string s, string t) {
-        if(!dependents.ContainsKey(s)) {
-            dependents[s] = new HashSet<string>();
-        }
-        dependents[s].Add(t);
-    }
-    private void AddDependee(string s, string t) {
-        if (!dependees.ContainsKey(s)) {
-            dependees[s].Add(s);
-        }
-        dependees[s].Add(t);
-    }
+    //private void AddDependent(string s, string t) {
+    //    if(!dependents.ContainsKey(s)) {
+    //        dependents[s] = new HashSet<string>();
+    //    }
+    //    dependents[s].Add(t);
+    //}
+    //private void AddDependee(string s, string t) {
+    //    if (!dependees.ContainsKey(s)) {
+    //        dependees[s].Add(s);
+    //    }
+    //    dependees[s].Add(t);
+    //}
 }
