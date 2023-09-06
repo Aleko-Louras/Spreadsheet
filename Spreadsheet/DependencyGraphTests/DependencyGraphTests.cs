@@ -257,4 +257,12 @@ public class DependencyGraphTest {
         Assert.AreEqual(0, t.NumDependees("a"));
     }
 
+    [TestMethod()]
+    public void addSameDependency() {
+        DependencyGraph t = new DependencyGraph();
+        t.AddDependency("a", "b");
+        t.AddDependency("a", "b");
+
+        Assert.AreEqual(1, t.NumDependencies);
+    }
 }

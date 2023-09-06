@@ -33,16 +33,13 @@ namespace SpreadsheetUtilities;
 public class DependencyGraph {
 
     private HashSet<ValueTuple<string, string>> dependencies =
-        new HashSet<ValueTuple<string, string>>();
+        new();
 
     private Dictionary<string, HashSet<string>> dependents =
-        new Dictionary<string, HashSet<string>>();
+        new();
 
     private Dictionary<string, HashSet<string>> dependees =
-        new Dictionary<string, HashSet<string>>();
-
-    private int numDependencies;
-
+        new();
 
     /// <summary>
     /// Creates an empty DependencyGraph.
@@ -66,7 +63,7 @@ public class DependencyGraph {
     /// that is, the number of things that s depends on.
     /// </summary>
     public int NumDependees(string s) {
-        if (dependees.TryGetValue(s, out HashSet<string> sDependees)) {
+        if (dependees.TryGetValue(s, out HashSet<string>? sDependees)) {
             return sDependees.Count;
         }
         else {
@@ -79,8 +76,7 @@ public class DependencyGraph {
     /// Reports whether dependents(s) is non-empty.
     /// </summary>
     public bool HasDependents(string s) {
-        HashSet<string> sDependents;
-        if (dependents.TryGetValue(s, out sDependents)) {
+        if (dependents.TryGetValue(s, out HashSet<string>? sDependents)) {
             if (sDependents.Count > 0) {
                 return true;
             } else { return false; }
@@ -93,8 +89,7 @@ public class DependencyGraph {
     /// Reports whether dependees(s) is non-empty.
     /// </summary>
     public bool HasDependees(string s) {
-        HashSet<string> sDependees;
-        if (dependees.TryGetValue(s, out sDependees)) {
+        if (dependees.TryGetValue(s, out HashSet<string>? sDependees)) {
             if (sDependees.Count > 0) {
                 return true;
             } else { return false; }
@@ -108,8 +103,9 @@ public class DependencyGraph {
     /// </summary>
     public IEnumerable<string> GetDependents(string s) {
         if(HasDependents(s)) {
-            dependents.TryGetValue(s, out HashSet<string> sDependents);
-            return sDependents;
+            //dependents.TryGetValue(s, out HashSet<string>? sDependents);
+            //return sDependents;
+            return dependents[s];
         }
         else {
             if (dependents.ContainsKey(s)) {
@@ -127,8 +123,9 @@ public class DependencyGraph {
     /// </summary>
     public IEnumerable<string> GetDependees(string s) {
         if (HasDependees(s)) {
-            dependees.TryGetValue(s, out HashSet<string> sDependees);
-            return sDependees;
+            //dependees.TryGetValue(s, out HashSet<string>? sDependees);
+            //return sDependees;
+            return dependees[s];
         }
         else {
             if (dependees.ContainsKey(s)) {
@@ -208,7 +205,7 @@ public class DependencyGraph {
     public void ReplaceDependents(string s, IEnumerable<string> newDependents) {
         
         List<ValueTuple<string, string>> removedDependencies =
-            new List<ValueTuple<string, string>>();
+            new();
 
         foreach ((string,string) tuple in dependencies) {
             if (tuple.Item1 == s) {
@@ -234,7 +231,7 @@ public class DependencyGraph {
     public void ReplaceDependees(string s, IEnumerable<string> newDependees) {
 
         List<ValueTuple<string, string>> removedDependencies =
-            new List<ValueTuple<string, string>>();
+            new();
 
         foreach ((string, string) tuple in dependencies) {
             if (tuple.Item2 == s) {
@@ -251,13 +248,13 @@ public class DependencyGraph {
         }
     }
 
-    private void addDependent(string s, string t) {
+    private void AddDependent(string s, string t) {
         if(!dependents.ContainsKey(s)) {
             dependents[s] = new HashSet<string>();
         }
         dependents[s].Add(t);
     }
-    private void addDependee(string s, string t) {
+    private void AddDependee(string s, string t) {
         if (!dependees.ContainsKey(s)) {
             dependees[s].Add(s);
         }
