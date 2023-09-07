@@ -249,6 +249,29 @@ public class DependencyGraphTest {
 
         Assert.AreEqual(3, t.NumDependencies);
     }
+
+    [TestMethod()]
+    public void ReversedDependenciesAreDifferent() {
+        DependencyGraph t = new DependencyGraph();
+        t.AddDependency("a", "b");
+        t.AddDependency("b", "a");
+
+        Assert.AreEqual(2, t.NumDependencies);
+        Assert.IsTrue(t.HasDependees("a"));
+        Assert.IsTrue(t.HasDependees("b"));
+
+        Assert.IsTrue(t.HasDependents("a"));
+        Assert.IsTrue(t.HasDependents("b"));
+
+        IEnumerator<string> e1 = t.GetDependees("a").GetEnumerator();
+        Assert.IsTrue(e1.MoveNext());
+        Assert.AreEqual("b", e1.Current);
+
+        IEnumerator<string> e2 = t.GetDependees("b").GetEnumerator();
+        Assert.IsTrue(e2.MoveNext());
+        Assert.AreEqual("a", e2.Current);
+    }
+
     [TestMethod()]
     public void SimpleNumDependeesTest() {
         DependencyGraph t = new DependencyGraph();
@@ -352,6 +375,19 @@ public class DependencyGraphTest {
        
     }
 
+    [TestMethod()]
+    public void SimpleGraphsAreIndependentTest() {
+        DependencyGraph t = new DependencyGraph();
+        DependencyGraph u = new DependencyGraph();
+        t.AddDependency("a", "b");
+        u.AddDependency("b", "c");
+
+        Assert.AreEqual(1, t.NumDependencies);
+        Assert.AreEqual(1, u.NumDependencies);
+
+
+    }
+
 
 
     [TestMethod()]
@@ -444,6 +480,7 @@ public class DependencyGraphTest {
         CollectionAssert.AreEqual(empty.ToList(), t.GetDependents("a").ToList());
 
     }
+
     [TestMethod()]
     public void NonExistantNodeTest() {
         DependencyGraph t = new DependencyGraph();
@@ -457,6 +494,49 @@ public class DependencyGraphTest {
 
         IEnumerator<string> f = t.GetDependents("x").GetEnumerator();
         Assert.IsFalse(f.MoveNext());
+    }
+
+    [TestMethod()]
+    public void sInDictWithEmptySet() {
+        DependencyGraph t = new DependencyGraph();
+        t.AddDependency("a", "b");
+
+        t.ReplaceDependents("a", new HashSet<string>() );
+
+        Assert.IsFalse(t.HasDependents("a"));
+    }
+
+    [TestMethod()]
+    public void RemoveAndReplace() {
+        DependencyGraph t = new DependencyGraph();
+        t.AddDependency("a", "b");
+
+        t.ReplaceDependents("a", new HashSet<string>());
+
+        Assert.IsFalse(t.HasDependents("a"));
+
+        t.AddDependency("a", "b");
+        Assert.IsTrue(t.HasDependents("a"));
+    }
+
+    [TestMethod()]
+    public void RemovedDependents() {
+        DependencyGraph t = new DependencyGraph();
+        t.AddDependency("a", "b");
+
+        t.ReplaceDependents("a", new HashSet<string>());
+
+        Assert.IsFalse(t.HasDependents("a"));
+
+        IEnumerator<string> e1 = t.GetDependents("a").GetEnumerator();
+        Assert.IsFalse(e1.MoveNext());
+
+        t.AddDependency("a", "b");
+        Assert.IsTrue(t.HasDependents("a"));
+
+        e1 = t.GetDependents("a").GetEnumerator();
+        Assert.IsTrue(e1.MoveNext());
+        Assert.AreEqual("b", e1.Current);
     }
 
 

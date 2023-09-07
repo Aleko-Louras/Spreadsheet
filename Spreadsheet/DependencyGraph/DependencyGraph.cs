@@ -1,5 +1,9 @@
 ﻿// Skeleton implementation by: Joe Zachary, Daniel Kopta, Travis Martin for CS 3500
 // Last updated: August 2023 (small tweak to API)
+//
+// DependencyGraph method implementations by Quinn Pritchett
+// Updated September 2023
+//
 
 namespace SpreadsheetUtilities;
 
@@ -32,12 +36,17 @@ namespace SpreadsheetUtilities;
 /// </summary>
 public class DependencyGraph {
 
+    // Stores all dependency pairs as ValueTuples
     private HashSet<ValueTuple<string, string>> dependencies =
         new();
 
+    // Stores a set of dependents for a node
+    // Asking for a set of dependents = "who depends on me"
     private Dictionary<string, HashSet<string>> dependents =
         new();
 
+    // Stores a set of dependents for a node
+    // Asking for a set of dependees = "who do I depend upon"
     private Dictionary<string, HashSet<string>> dependees =
         new();
 
@@ -69,7 +78,6 @@ public class DependencyGraph {
         else {
             return 0;
         }
-
     }
 
 
@@ -82,7 +90,7 @@ public class DependencyGraph {
                 return true;
             } else { return false; } // If s is in dict, but has empty set
         }
-        else { return false; }
+        else { return false; } // s is not in dict
     }
 
 
@@ -95,7 +103,7 @@ public class DependencyGraph {
                 return true;
             } else { return false; }// If s is in dict, but has empty set
         }
-        else { return false; }
+        else { return false; } // s in not in dict
     }
 
 
@@ -108,10 +116,10 @@ public class DependencyGraph {
         }
         else {
             if (dependents.ContainsKey(s)) {
-                return dependents[s];
+                return dependents[s]; // s in is dependents dict, but has none
             }
             else {
-                return new HashSet<string>();
+                return new HashSet<string>(); // s is not in dependents dict
             }
         }
     }
@@ -126,10 +134,10 @@ public class DependencyGraph {
         }
         else {
             if (dependees.ContainsKey(s)) {
-                return dependees[s];
+                return dependees[s]; // s in is dependees dict, but has none
             }
             else {
-                return new HashSet<string>();
+                return new HashSet<string>(); // s not in dependees dict
             }
         }
     }
