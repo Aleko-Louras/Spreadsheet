@@ -158,20 +158,12 @@ public class DependencyGraph {
     public void AddDependency(string s, string t) {
         ValueTuple<string, string> pair = (s, t);
 
-        //If the dependency does not already exist add it
         dependencies.Add(pair);
 
         // A dependecy was added, which implies
         // we added a dependent and dependee
         AddDependent(s, t);
         AddDependee(s, t);
-
-        // Update dependents, who depends on s? t does.
-        
-
-        // Update the dependees, t depends on s
-        
-
     }
 
 
@@ -240,6 +232,11 @@ public class DependencyGraph {
         }
     }
 
+    /// <summary>
+    /// Adds t to the set of dependents for s
+    /// </summary>
+    /// <param name="s">The dependee - a node that is depended upon</param>
+    /// <param name="t">The dependent - a node that depends on another node</param>
     private void AddDependent(string s, string t) {
         if (!dependents.ContainsKey(s)) {
             dependents.Add(s, new HashSet<string> { t });
@@ -248,7 +245,11 @@ public class DependencyGraph {
             dependents[s].Add(t); // s already has dependents, add another for t
         }
     }
-
+    /// <summary>
+    /// Adds s to the set of dependees for t
+    /// </summary>
+    /// <param name="s"> The dependee - a node that is depended upon</param>
+    /// <param name="t"> The dependent - a node that depends on another node </param>
     private void AddDependee(string s, string t) {
         if (!dependees.ContainsKey(t)) {
             dependees.Add(t, new HashSet<string> { s });
