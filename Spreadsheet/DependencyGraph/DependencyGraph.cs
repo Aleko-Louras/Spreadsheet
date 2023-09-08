@@ -85,11 +85,8 @@ public class DependencyGraph {
     /// Reports whether dependents(s) is non-empty.
     /// </summary>
     public bool HasDependents(string s) {
-        if (dependents.TryGetValue(s, out HashSet<string>? sDependents)) {
-            if (sDependents.Count > 0) {
-                return true;
-            }
-            else { return false; } // If s is in dict, but has empty set
+        if (dependents.TryGetValue(s, out HashSet<string>? sDependents) && sDependents.Count > 0) {
+            return true;
         }
         else { return false; } // s is not in dict
     }
@@ -99,11 +96,8 @@ public class DependencyGraph {
     /// Reports whether dependees(s) is non-empty.
     /// </summary>
     public bool HasDependees(string s) {
-        if (dependees.TryGetValue(s, out HashSet<string>? sDependees)) {
-            if (sDependees.Count > 0) {
-                return true;
-            }
-            else { return false; }// If s is in dict, but has empty set
+        if (dependees.TryGetValue(s, out HashSet<string>? sDependees) && sDependees.Count > 0) {
+            return true;
         }
         else { return false; } // s in not in dict
     }
@@ -156,12 +150,12 @@ public class DependencyGraph {
     /// <param name="s"> s must be evaluated first. T depends on S</param>
     /// <param name="t"> t cannot be evaluated until s is</param>
     public void AddDependency(string s, string t) {
-        ValueTuple<string, string> pair = (s, t);
 
+        ValueTuple<string, string> pair = (s, t);
         dependencies.Add(pair);
 
         // A dependecy was added, which implies
-        // we added a dependent and dependee
+        // we added a dependent and dependee.
         AddDependent(s, t);
         AddDependee(s, t);
     }
@@ -173,6 +167,7 @@ public class DependencyGraph {
     /// <param name="s"></param>
     /// <param name="t"></param>
     public void RemoveDependency(string s, string t) {
+
         ValueTuple<string, string> pair = (s, t);
 
         if (dependencies.Remove(pair)) {
@@ -191,14 +186,11 @@ public class DependencyGraph {
         List<ValueTuple<string, string>> removedDependencies =
             new();
 
+        //Find the dependencies that match
         foreach ((string, string) pair in dependencies) {
             if (pair.Item1 == s) {
-                removedDependencies.Add(pair);
+                RemoveDependency(pair.Item1, pair.Item2);
             }
-        }
-
-        foreach ((string, string) pair in removedDependencies) {
-            RemoveDependency(pair.Item1, pair.Item2);
         }
 
         foreach (string dependent in newDependents) {
@@ -217,14 +209,10 @@ public class DependencyGraph {
         List<ValueTuple<string, string>> removedDependencies =
             new();
 
-        foreach ((string, string) tuple in dependencies) {
-            if (tuple.Item2 == s) {
-                removedDependencies.Add(tuple);
+        foreach ((string, string) pair in dependencies) {
+            if (pair.Item2 == s) {
+                RemoveDependency(pair.Item1, pair.Item2);
             }
-        }
-
-        foreach (var pair in removedDependencies) {
-            RemoveDependency(pair.Item1, pair.Item2);
         }
 
         foreach (string dependee in newDependees) {
