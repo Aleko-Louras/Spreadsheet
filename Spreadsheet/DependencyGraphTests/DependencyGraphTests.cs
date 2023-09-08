@@ -6,6 +6,9 @@ namespace DevelopmentTests;
 /// <summary>
 ///This is a test class for DependencyGraphTest and is intended
 ///to contain all DependencyGraphTest Unit Tests (once completed by the student)
+///
+/// Additional Unit Tests added by Quinn Pritchett
+/// September 2023
 ///</summary>
 [TestClass()]
 public class DependencyGraphTest {
@@ -334,6 +337,7 @@ public class DependencyGraphTest {
 
 
     }
+
     [TestMethod()]
     public void ComplexGraphDepencencyTest() {
         DependencyGraph t = new DependencyGraph();
@@ -388,8 +392,6 @@ public class DependencyGraphTest {
 
     }
 
-
-
     [TestMethod()]
     public void EmptyDependeesAndDependents() {
         DependencyGraph t = new DependencyGraph();
@@ -406,16 +408,19 @@ public class DependencyGraphTest {
         Assert.AreEqual(0, t.NumDependencies);
         Assert.AreEqual(0, t.NumDependees("a"));
     }
+
     [TestMethod()]
     public void NumDependenciesOnNewGraph() {
         DependencyGraph t = new DependencyGraph();
         Assert.AreEqual(0, t.NumDependencies);
     }
+
     [TestMethod()]
     public void NumDependeesBadArgument() {
         DependencyGraph t = new DependencyGraph();
         Assert.AreEqual(0, t.NumDependees("a a"));
     }
+
     [TestMethod()]
     public void NumDependenciesAfterRemoves() {
         DependencyGraph t = new DependencyGraph();
@@ -537,6 +542,26 @@ public class DependencyGraphTest {
         e1 = t.GetDependents("a").GetEnumerator();
         Assert.IsTrue(e1.MoveNext());
         Assert.AreEqual("b", e1.Current);
+    }
+
+    [TestMethod()]
+    public void AddEmptyStringNodes() {
+        DependencyGraph t = new DependencyGraph();
+        t.AddDependency("", "");
+        Assert.AreEqual(1, t.NumDependencies);
+        Assert.AreEqual(1, t.NumDependees(""));
+
+    }
+
+    [TestMethod()]
+    public void EmptyStringNodesHaveDependents() {
+        DependencyGraph t = new DependencyGraph();
+        t.AddDependency("", "a");
+        t.AddDependency("", "b");
+        t.AddDependency("", "c");
+        Assert.AreEqual(3, t.NumDependencies);
+        Assert.AreEqual(0, t.NumDependees(""));
+
     }
 
 
