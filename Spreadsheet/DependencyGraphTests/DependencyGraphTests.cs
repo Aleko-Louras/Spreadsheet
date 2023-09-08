@@ -564,6 +564,21 @@ public class DependencyGraphTest {
 
     }
 
+    [TestMethod()]
+    public void RemoveAllDependentsWithEmptyReplace() {
+        DependencyGraph t = new DependencyGraph();
+        t.AddDependency("a", "b");
+        t.AddDependency("a", "c");
+        t.AddDependency("a", "d");
+
+        t.ReplaceDependents("a", new List<string>());
+        Assert.AreEqual(0, t.NumDependencies);
+        Assert.AreEqual(0, t.NumDependees("a"));
+        IEnumerator<string> e = t.GetDependents("a").GetEnumerator();
+        Assert.IsFalse(e.MoveNext());
+
+    }
+
 
 
 }
