@@ -75,9 +75,7 @@ public class DependencyGraph {
         if (HasDependees(s)) {
             return GetDependees(s).Count();
         }
-        else {
-            return 0;
-        }
+        else { return 0; }
     }
 
 
@@ -88,7 +86,7 @@ public class DependencyGraph {
         if (dependents.TryGetValue(s, out HashSet<string>? sDependents) && sDependents.Count > 0) {
             return true;
         }
-        else { return false; } // s is not in dict
+        else return false;
     }
 
 
@@ -99,7 +97,7 @@ public class DependencyGraph {
         if (dependees.TryGetValue(s, out HashSet<string>? sDependees) && sDependees.Count > 0) {
             return true;
         }
-        else { return false; } // s in not in dict
+        else return false;
     }
 
 
@@ -183,10 +181,6 @@ public class DependencyGraph {
     /// </summary>
     public void ReplaceDependents(string s, IEnumerable<string> newDependents) {
 
-        List<ValueTuple<string, string>> removedDependencies =
-            new();
-
-        //Find the dependencies that match
         foreach ((string, string) pair in dependencies) {
             if (pair.Item1 == s) {
                 RemoveDependency(pair.Item1, pair.Item2);
@@ -204,10 +198,7 @@ public class DependencyGraph {
     /// Removes all existing ordered pairs of the form (r,s).  Then, for each 
     /// t in newDependees, adds the ordered pair (t,s).
     /// </summary>
-    public void ReplaceDependees(string s, IEnumerable<string> newDependees) {
-
-        List<ValueTuple<string, string>> removedDependencies =
-            new();
+    public void ReplaceDependees(string s, IEnumerable<string> newDependees) { 
 
         foreach ((string, string) pair in dependencies) {
             if (pair.Item2 == s) {
@@ -233,6 +224,8 @@ public class DependencyGraph {
             dependents[s].Add(t); // s already has dependents, add another for t
         }
     }
+
+
     /// <summary>
     /// Adds s to the set of dependees for t
     /// </summary>
