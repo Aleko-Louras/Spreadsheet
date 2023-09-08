@@ -40,12 +40,16 @@ public class DependencyGraph {
     private HashSet<ValueTuple<string, string>> dependencies =
         new();
 
-    // Stores a set of dependents for a node
+    // Stores a set of dependents for a node in a dictionary.
+    // Keys: the node
+    // Values: the nodes set of dependents
     // Asking for a set of dependents = "who depends on me"
     private Dictionary<string, HashSet<string>> dependents =
         new();
 
-    // Stores a set of dependents for a node
+    // Stores a set of dependees for a node in a dictionary.
+    // Keys: the node
+    // Values: the nodes set of dependees
     // Asking for a set of dependees = "who do I depend upon" 
     private Dictionary<string, HashSet<string>> dependees =
         new();
@@ -198,7 +202,7 @@ public class DependencyGraph {
     /// Removes all existing ordered pairs of the form (r,s).  Then, for each 
     /// t in newDependees, adds the ordered pair (t,s).
     /// </summary>
-    public void ReplaceDependees(string s, IEnumerable<string> newDependees) { 
+    public void ReplaceDependees(string s, IEnumerable<string> newDependees) {
 
         foreach ((string, string) pair in dependencies) {
             if (pair.Item2 == s) {
