@@ -46,7 +46,7 @@ public class DependencyGraph {
         new();
 
     // Stores a set of dependents for a node
-    // Asking for a set of dependees = "who do I depend upon"
+    // Asking for a set of dependees = "who do I depend upon" 
     private Dictionary<string, HashSet<string>> dependees =
         new();
 
@@ -54,7 +54,7 @@ public class DependencyGraph {
     /// Creates an empty DependencyGraph.
     /// </summary>
     public DependencyGraph() {
-        
+
     }
 
 
@@ -88,7 +88,8 @@ public class DependencyGraph {
         if (dependents.TryGetValue(s, out HashSet<string>? sDependents)) {
             if (sDependents.Count > 0) {
                 return true;
-            } else { return false; } // If s is in dict, but has empty set
+            }
+            else { return false; } // If s is in dict, but has empty set
         }
         else { return false; } // s is not in dict
     }
@@ -101,7 +102,8 @@ public class DependencyGraph {
         if (dependees.TryGetValue(s, out HashSet<string>? sDependees)) {
             if (sDependees.Count > 0) {
                 return true;
-            } else { return false; }// If s is in dict, but has empty set
+            }
+            else { return false; }// If s is in dict, but has empty set
         }
         else { return false; } // s in not in dict
     }
@@ -111,7 +113,7 @@ public class DependencyGraph {
     /// Enumerates dependents(s).
     /// </summary>
     public IEnumerable<string> GetDependents(string s) {
-        if(HasDependents(s)) {
+        if (HasDependents(s)) {
             return dependents[s];
         }
         else {
@@ -159,22 +161,17 @@ public class DependencyGraph {
         //If the dependency does not already exist add it
         dependencies.Add(pair);
 
+        // A dependecy was added, which implies
+        // we added a dependent and dependee
+        AddDependent(s, t);
+        AddDependee(s, t);
+
         // Update dependents, who depends on s? t does.
-        if (!dependents.ContainsKey(s)) {
-            dependents.Add(s, new HashSet<string> {t});
-        }
-        else {
-            dependents[s].Add(t); // s already has dependents, add another for t
-        }
+        
 
         // Update the dependees, t depends on s
-        if(!dependees.ContainsKey(t)) {
-            dependees.Add(t, new HashSet<string> {s});
-        }
-        else {
-            dependees[t].Add(s);
-        }
-            
+        
+
     }
 
 
@@ -198,24 +195,24 @@ public class DependencyGraph {
     /// t in newDependents, adds the ordered pair (s,t).
     /// </summary>
     public void ReplaceDependents(string s, IEnumerable<string> newDependents) {
-        
+
         List<ValueTuple<string, string>> removedDependencies =
             new();
 
-        foreach ((string,string) pair in dependencies) {
+        foreach ((string, string) pair in dependencies) {
             if (pair.Item1 == s) {
                 removedDependencies.Add(pair);
             }
         }
 
-        foreach((string, string) pair in removedDependencies) {
+        foreach ((string, string) pair in removedDependencies) {
             RemoveDependency(pair.Item1, pair.Item2);
         }
 
-        foreach(string dependent in newDependents) {
+        foreach (string dependent in newDependents) {
             AddDependency(s, dependent);
         }
-        
+
     }
 
 
@@ -240,6 +237,24 @@ public class DependencyGraph {
 
         foreach (string dependee in newDependees) {
             AddDependency(dependee, s);
+        }
+    }
+
+    private void AddDependent(string s, string t) {
+        if (!dependents.ContainsKey(s)) {
+            dependents.Add(s, new HashSet<string> { t });
+        }
+        else {
+            dependents[s].Add(t); // s already has dependents, add another for t
+        }
+    }
+
+    private void AddDependee(string s, string t) {
+        if (!dependees.ContainsKey(t)) {
+            dependees.Add(t, new HashSet<string> { s });
+        }
+        else {
+            dependees[t].Add(s);
         }
     }
 }
