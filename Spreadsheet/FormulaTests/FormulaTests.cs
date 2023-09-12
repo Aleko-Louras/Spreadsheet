@@ -12,8 +12,8 @@ public class FormulaTests {
         return 1;
     }
 
-    static void normalize(string v) {
-
+    static string N(string v) {
+        return v.ToUpper();
     }
 
     // Only valid tokens should be in the formula
@@ -40,6 +40,7 @@ public class FormulaTests {
     public void RightParenthesesRule() {
 
         Assert.ThrowsException<FormulaFormatException>(delegate { Formula f = new Formula("())"); });
+        Assert.ThrowsException<FormulaFormatException>(delegate { Formula f = new Formula("("); });
 
     }
 
@@ -84,5 +85,65 @@ public class FormulaTests {
         Assert.ThrowsException<FormulaFormatException>(delegate { Formula f = new Formula("4("); });
         Assert.ThrowsException<FormulaFormatException>(delegate { Formula f = new Formula("4 E"); });
 
+    }
+
+    [TestMethod]
+    public void GetNoVariablesTest() {
+        Formula f = new Formula("1");
+        IEnumerator<string> e = f.GetVariables().GetEnumerator();
+        Assert.IsFalse(e.MoveNext());
+    }
+
+    [TestMethod]
+    public void GetOneVariableTest() {
+        Formula f = new Formula("A1");
+        IEnumerator<string> e = f.GetVariables().GetEnumerator();
+        Assert.IsTrue(e.MoveNext());
+        string s1 = e.Current;
+        Assert.AreEqual("A1", s1);
+    }
+
+    [TestMethod]
+    public void GetVariablesNoNormalizationTest() {
+        Formula f = new Formula("x+X*z");
+        IEnumerator<string> e = f.GetVariables().GetEnumerator();
+
+        Assert.IsTrue(e.MoveNext());
+        String s1 = e.Current;
+        Assert.IsTrue(e.MoveNext());
+        String s2 = e.Current;
+        Assert.IsTrue(e.MoveNext());
+        String s3 = e.Current;
+        Assert.IsFalse(e.MoveNext());
+        Assert.IsTrue(((s1 == "x") && (s2 == "X")) && (s3 == "z"));
+    }
+
+    // Should enumerate X,Y,Z
+    [TestMethod]
+    public void GetVariablesWithNormalizationTest() {
+        Formula f = new Formula("x+y*z", N, s => true);
+        IEnumerator<string> e = f.GetVariables().GetEnumerator();
+
+        Assert.IsTrue(e.MoveNext());
+        String s1 = e.Current;
+        Assert.IsTrue(e.MoveNext());
+        String s2 = e.Current;
+        Assert.IsTrue(e.MoveNext());
+        String s3 = e.Current;
+        Assert.IsFalse(e.MoveNext());
+        Assert.IsTrue(((s1 == "X") && (s2 == "Y")) && (s3 == "Z"));
+    }
+
+    [TestMethod]
+    public void GetVariablesWithDuplicationNormalizationTest() {
+        Formula f = new Formula("x+X*z", N, s => true);
+        IEnumerator<string> e = f.GetVariables().GetEnumerator();
+
+        Assert.IsTrue(e.MoveNext());
+        String s1 = e.Current;
+        Assert.IsTrue(e.MoveNext());
+        String s2 = e.Current;
+        Assert.IsFalse(e.MoveNext());
+        Assert.IsTrue(((s1 == "X") && (s2 == "Z")));
     }
 }
