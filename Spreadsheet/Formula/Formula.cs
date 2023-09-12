@@ -33,7 +33,7 @@ namespace SpreadsheetUtilities;
 public class Formula {
     // The list of tokens and variables. These should not be 
     //private readonly List<string> tokens;
-    //private readonly List<string> variables;
+    private readonly List<string> variables = new();
 
     /// <summary>
     /// Creates a Formula from a string that consists of an infix expression written as
@@ -77,6 +77,11 @@ public class Formula {
         FormulaHasValidTokens(tokens);
         FormulaHasValidSyntax(tokens);
 
+        foreach (string token in tokens) {
+            if (IsVariable(token)) {
+                variables.Add(token);
+            }
+        }
         
     }
 
@@ -117,7 +122,7 @@ public class Formula {
     /// new Formula("x+X*z").GetVariables() should enumerate "x", "X", and "z".
     /// </summary>
     public IEnumerable<string> GetVariables() {
-        return new List<string>();
+        return variables;
     }
 
     /// <summary>
@@ -224,7 +229,6 @@ public class Formula {
 
     private static bool FormulaHasValidSyntax(List<string> tokens) {
 
-
         // One token rule
         if (tokens.Count == 0) {
             throw new FormulaFormatException(
@@ -284,8 +288,10 @@ public class Formula {
             }
         }
 
+        // Extra Following Rule
         foreach (string token in tokens) {
             if (tokens.Count == 1) break;
+            if (tokens.IndexOf(token) == tokens.Count - 1) break;
             if (IsNumber(token) || IsVariable(token)  || IsCloseParen(token)) {
                 int parenIndex = tokens.IndexOf(token);
                 string followingToken = tokens.ElementAt(parenIndex + 1);
