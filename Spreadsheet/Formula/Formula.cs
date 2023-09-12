@@ -73,14 +73,7 @@ public class Formula {
 
         IEnumerable<string> enumerableTokens = GetTokens(formula);
         List<string> tokens = enumerableTokens.ToList();
-        foreach(string token in tokens) {
-            if (IsVariable(token)) {
-                if (isValid(token)) {
-                    normalize(token);
-                }
-            }
-
-        }
+        VariableValidation(tokens, normalize, isValid);
         FormulaHasValidTokens(tokens);
         FormulaHasValidSyntax(tokens);
 
@@ -310,9 +303,18 @@ public class Formula {
         return true;
     } 
 
-    // Returns true if the token is a (, ), +, -, *, /,
-    // variable, or decimal real number (including scientific notation).
-    private static bool IsValidToken(string token) {
+    private static bool VariableValidation (List<string> tokens, Func<string, string> normalize, Func<string, bool> isValid) {
+        foreach (string token in tokens) {
+            if (IsVariable(token)) {
+                if (isValid(token)) {
+                    normalize(token);
+                }
+                else {
+                    throw new FormulaFormatException("Illegal variable");
+                }
+            }
+
+        }
         return true;
     }
 
