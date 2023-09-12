@@ -31,10 +31,7 @@ namespace SpreadsheetUtilities;
 /// Their use is described in detail in the constructor and method comments.
 /// </summary>
 public class Formula {
-    // The list of tokens and variables. These should not be 
-    //private readonly List<string> tokens;
     private readonly List<string> variables = new();
-
     /// <summary>
     /// Creates a Formula from a string that consists of an infix expression written as
     /// described in the class comment.  If the expression is syntactically invalid,
@@ -71,17 +68,30 @@ public class Formula {
     /// </summary>
     public Formula(string formula, Func<string, string> normalize, Func<string, bool> isValid) {
 
+        // Get a list of tokens out of the provided formula
         IEnumerable<string> enumerableTokens = GetTokens(formula);
         List<string> tokens = enumerableTokens.ToList();
-        VariableValidation(tokens, normalize, isValid);
-        FormulaHasValidTokens(tokens);
-        FormulaHasValidSyntax(tokens);
 
-        foreach (string token in tokens) {
+        //Loop through the list, adding tokens and normalized  variables
+        List<string> normalizedTokens = new();
+        foreach(string token in tokens) {
             if (IsVariable(token)) {
-                variables.Add(token);
+                if (isValid(normalize(token))) {
+                    normalizedTokens.Add(normalize(token));
+
+                    if (!variables.Contains(normalize(token))) {
+                        variables.Add(normalize(token));
+                    }
+                } else {
+                    throw new FormulaFormatException("Bad variable");
+                }
+            } else {
+                normalizedTokens.Add(token);
             }
         }
+
+        FormulaHasValidTokens(normalizedTokens);
+        FormulaHasValidSyntax(normalizedTokens);
         
     }
 
@@ -306,21 +316,6 @@ public class Formula {
             }
         }
 
-        return true;
-    } 
-
-    private static bool VariableValidation (List<string> tokens, Func<string, string> normalize, Func<string, bool> isValid) {
-        foreach (string token in tokens) {
-            if (IsVariable(token)) {
-                if (isValid(token)) {
-                    normalize(token);
-                }
-                else {
-                    throw new FormulaFormatException("Illegal variable");
-                }
-            }
-
-        }
         return true;
     }
 
