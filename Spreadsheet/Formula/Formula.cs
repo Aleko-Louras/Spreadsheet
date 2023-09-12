@@ -2,6 +2,10 @@
 // Read the entire skeleton carefully and completely before you
 // do anything else!
 // Last updated: August 2023 (small tweak to API)
+//
+// Implementation by Quinn Pritchett
+// September 2023
+//
 
 using System.Text.RegularExpressions;
 
@@ -27,6 +31,10 @@ namespace SpreadsheetUtilities;
 /// Their use is described in detail in the constructor and method comments.
 /// </summary>
 public class Formula {
+    // The list of tokens and variables. These should not be 
+    //private readonly List<string> tokens;
+    //private readonly List<string> variables;
+
     /// <summary>
     /// Creates a Formula from a string that consists of an infix expression written as
     /// described in the class comment.  If the expression is syntactically invalid,
@@ -62,6 +70,21 @@ public class Formula {
     /// new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect.
     /// </summary>
     public Formula(string formula, Func<string, string> normalize, Func<string, bool> isValid) {
+
+        IEnumerable<string> enumerableTokens = GetTokens(formula);
+        List<string> tokens = enumerableTokens.ToList();
+        foreach(string token in tokens) {
+            if (IsVariable(token)) {
+                if (isValid(token)) {
+                    normalize(token);
+                }
+            }
+
+        }
+        FormulaHasValidTokens(tokens);
+        FormulaHasValidSyntax(tokens);
+
+        
     }
 
     /// <summary>
@@ -193,7 +216,145 @@ public class Formula {
         }
 
     }
+    private static bool FormulaHasValidTokens(List<string> tokens) {
+        // Parsing
+        foreach (string token in tokens) {
+            if (IsOperator(token) ||
+                IsVariable(token) ||
+                IsNumber(token) ||
+                IsOpenParen(token) ||
+                IsCloseParen(token))
+                return true;
+        }
+        throw new FormulaFormatException("Formula Format Exception: Invalid token found, check formula");
+    }
+
+    private static bool FormulaHasValidSyntax(List<string> tokens) {
+
+
+        // One token rule
+        if (tokens.Count == 0) {
+            throw new FormulaFormatException(
+                "Formula Format Exception: There must be at least one token");
+        }
+        
+
+        // Right Parent and Balanced Paren Rules
+        int numRP = 0;
+        int numLP = 0;
+        foreach (string token in tokens) {
+
+            if (token == "(")
+                numRP += 1;
+            if (token == ")") {
+                numLP += 1;
+
+                if (numLP > numRP) {
+                    throw new FormulaFormatException(
+                        "Formula Format Exception: Unmatched left parenthesis"
+                        );
+                }
+            }
+        }
+
+        if (numLP != numRP) {
+            throw new FormulaFormatException(
+                "Formula Format Exeption: Unbalanced Parentheses");
+        }
+        // Starting Token Check
+        string firstElement = tokens.ElementAt(0);
+        if (!(IsNumber(firstElement) || IsOpenParen(firstElement) || IsVariable(firstElement))) {
+            throw new FormulaFormatException(
+                "Formula Format Exception: The first token of an expression must be a" +
+                " number, a variable, or an opening parenthesis.");
+        }
+
+        // Ending Token Check
+        string lastElement = tokens.Last();
+        if (!(IsNumber(lastElement) || IsVariable(lastElement) || IsCloseParen(lastElement))) {
+            throw new FormulaFormatException(
+                "Formula Format Exception: The last token of an expression must be a" +
+                " number, a variable, or a closing parenthesis.");
+        }
+
+        // Parenthesis/Operator Following Rule
+        foreach (string token in tokens) {
+            if (IsOpenParen(token) || IsCloseParen(token)) {
+                int parenIndex = tokens.IndexOf(token);
+                string followingToken = tokens.ElementAt(parenIndex + 1);
+                if (!(IsNumber(followingToken) || IsOpenParen(followingToken) || IsVariable(followingToken))) {
+                    throw new FormulaFormatException(
+                        "Formula Format Exception: Any token that immediately " +
+                        "follows an opening parenthesis or an operator must be " +
+                        "either a number, a variable, or an opening parenthesis.");
+                }
+            }
+        }
+
+        foreach (string token in tokens) {
+            if (tokens.Count == 1) break;
+            if (IsNumber(token) || IsVariable(token)  || IsCloseParen(token)) {
+                int parenIndex = tokens.IndexOf(token);
+                string followingToken = tokens.ElementAt(parenIndex + 1);
+
+                if (!(IsOperator(followingToken) || IsCloseParen(followingToken))) {
+                    throw new FormulaFormatException(
+                        "Formula Format Exception: Any token that immediately " +
+                        "follows a number, a variable, or a closing parenthesis " +
+                        "must be either an operator or a closing parenthesis.");
+                }
+
+            }
+        }
+
+        return true;
+    } 
+
+    // Returns true if the token is a (, ), +, -, *, /,
+    // variable, or decimal real number (including scientific notation).
+    private static bool IsValidToken(string token) {
+        return true;
+    }
+
+    private static bool IsNumber(string token) {
+        string doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: [eE][\+-]?\d+)?";
+        if (Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace)) {
+            return true;
+        }
+        else return false;
+    }
+    private static bool IsVariable(string token) {
+        string varPattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
+        if (Regex.IsMatch(token, varPattern)) {
+            return true;
+        }
+        else return false;
+    }
+
+    private static bool IsOperator(string token) {
+        string opPattern = @"[\+\-*/]";
+        if (Regex.IsMatch(token, opPattern)) {
+            return true;
+        }
+        else return false;
+    }
+
+    private static bool IsOpenParen(string token) {
+        string lpPattern = @"\(";
+        if (Regex.IsMatch(token, lpPattern)) {
+            return true;
+        }
+        else return false;
+    }
+    private static bool IsCloseParen(string token) {
+        string rpPattern = @"\)";
+        if (Regex.IsMatch(token, rpPattern)) {
+            return true;
+        }
+        else return false;
+    }
 }
+
 
 /// <summary>
 /// Used to report syntactic errors in the argument to the Formula constructor.
