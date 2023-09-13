@@ -353,7 +353,7 @@ public class Formula {
     /// randomly-generated unequal Formulae have the same hash code should be extremely small.
     /// </summary>
     public override int GetHashCode() {
-        int hashCode = normalizedTokens.GetHashCode();
+        int hashCode = this.ToString().GetHashCode();
         return hashCode;
     }
 
