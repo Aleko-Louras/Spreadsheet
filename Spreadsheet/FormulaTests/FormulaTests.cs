@@ -134,6 +134,7 @@ public class FormulaTests {
         Assert.IsTrue(((s1 == "X") && (s2 == "Y")) && (s3 == "Z"));
     }
 
+    // GetVariables should contain no duplicate variables 
     [TestMethod]
     public void GetVariablesWithDuplicationNormalizationTest() {
         Formula f = new Formula("x+X*z", N, s => true);
@@ -145,5 +146,46 @@ public class FormulaTests {
         String s2 = e.Current;
         Assert.IsFalse(e.MoveNext());
         Assert.IsTrue(((s1 == "X") && (s2 == "Z")));
+    }
+
+    [TestMethod]
+    public void BadVariableTest() {
+
+        Assert.ThrowsException<FormulaFormatException>(delegate { Formula f = new Formula("1+$^+1"); });
+    }
+
+    [TestMethod]
+    public void ToStringTest() {
+        Formula f = new Formula("1+1");
+        string result = "1+1";
+
+        Assert.IsTrue(result.Equals(f.ToString()));
+    }
+
+    [TestMethod]
+    public void ToStringWithVariableTest() {
+        Formula f = new Formula("1+A1", N, s => true);
+        string result = "1+A1";
+
+        Assert.IsTrue(result.Equals(f.ToString()));
+    }
+
+    [TestMethod]
+    public void ToStringWithNonNormalizedVariableTest() {
+        Formula f = new Formula("1+a1", N, s => true);
+        string result = "1+A1";
+
+        Assert.IsTrue(result.Equals(f.ToString()));
+    }
+
+    [TestMethod]
+    public void EqualsTest() {
+
+        Assert.IsTrue(new Formula("x1+y2", N, s => true).Equals(new Formula("X1  +  Y2")));
+        Assert.IsFalse(new Formula("x1+y2").Equals(new Formula("X1+Y2")));
+        Assert.IsFalse(new Formula("x1+y2").Equals(new Formula("y2+x1")));
+        Formula f = new Formula("2.0 + x7");
+        Formula g = new Formula("2.000 + x7");
+        Assert.IsTrue(new Formula("2.0 + x7").Equals(new Formula("2.000 + x7"))); 
     }
 }
