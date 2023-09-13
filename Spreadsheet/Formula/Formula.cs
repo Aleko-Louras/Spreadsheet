@@ -122,6 +122,7 @@ public class Formula {
     /// This method should never throw an exception.
     /// </summary>
     public object Evaluate(Func<string, double> lookup) {
+
         return "";
     }
 
@@ -190,7 +191,13 @@ public class Formula {
     /// Note that f1 and f2 cannot be null, because their types are non-nullable
     /// </summary>
     public static bool operator ==(Formula f1, Formula f2) {
-        return false;
+
+        if (f1.Equals(f2)) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     /// <summary>
@@ -198,7 +205,13 @@ public class Formula {
     /// Note that f1 and f2 cannot be null, because their types are non-nullable
     /// </summary>
     public static bool operator !=(Formula f1, Formula f2) {
-        return false;
+
+        if (f1.Equals(f2)) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
     /// <summary>
@@ -207,7 +220,8 @@ public class Formula {
     /// randomly-generated unequal Formulae have the same hash code should be extremely small.
     /// </summary>
     public override int GetHashCode() {
-        return 0;
+        int hashCode = normalizedTokens.GetHashCode();
+        return hashCode;
     }
 
     /// <summary>
@@ -237,6 +251,7 @@ public class Formula {
         }
 
     }
+
     private static bool FormulaHasValidTokens(List<string> tokens) {
         // Parsing
         foreach (string token in tokens) {
