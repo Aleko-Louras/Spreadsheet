@@ -68,37 +68,16 @@ public class Formula {
     /// new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect.
     /// </summary>
     public Formula(string formula, Func<string, string> normalize, Func<string, bool> isValid) {
-
-        // Get a list of tokens out of the provided formula
         IEnumerable<string> enumerableTokens = GetTokens(formula);
         List<string> tokens = enumerableTokens.ToList();
 
-        //Loop through the list, adding tokens and normalized  variables
-        
-        foreach(string token in tokens) {
-            if (IsVariable(token)) {
-                if (isValid(normalize(token))) {
-                    normalizedTokens.Add(normalize(token));
-
-                    if (!variables.Contains(normalize(token))) {
-                        variables.Add(normalize(token));
-                    }
-                } else {
-                    throw new FormulaFormatException("Bad variable");
-                }
-            } else if (IsNumber(token)) {
-                Double d = Double.Parse(token);
-                string s = d.ToString();
-                normalizedTokens.Add(s);
-            } else {
-                normalizedTokens.Add(token);
-            }
-        }
-
+        AddTokensandNormalizeVariables(normalize, isValid, tokens);
         FormulaHasValidTokens(normalizedTokens);
         FormulaHasValidSyntax(normalizedTokens);
-        
+
     }
+
+    
 
     /// <summary>
     /// Evaluates this Formula, using the lookup delegate to determine the values of
@@ -123,7 +102,161 @@ public class Formula {
     /// </summary>
     public object Evaluate(Func<string, double> lookup) {
 
-        return "";
+        Stack<double> values = new Stack<double>();
+        Stack<string> operators = new Stack<string>();
+
+
+        foreach (string token in normalizedTokens) {
+
+            //Variable case, lookup the variable, then procede as in integer case.
+            if (isVariable(token)) {
+                double varValue = lookup(token); //Variable evaluation is handled by delegated function
+
+                if (operators.Count > 0) {
+                    string topOperator = operators.Peek();
+
+                    if (isMultiplyOrDivide(topOperator)) {
+                        if (values.Count >= 1) {
+                            double topValue = values.Pop();
+                            topOperator = operators.Pop();
+                            try {
+                                double result = HalfOperate(varValue, topOperator, topValue);
+                                values.Push(result);
+                            }
+                            catch(ArgumentException) {
+                                return new FormulaError();
+                            }
+                            
+                        }
+                    }
+                    else { values.Push(varValue); }
+                }
+                else { values.Push(varValue); }
+            }
+
+
+            // Integer case 
+            if (double.TryParse(token, out double intToken)) {
+                if (operators.Count > 0) {
+                    string topOperator = operators.Peek();
+
+                    if (isMultiplyOrDivide(topOperator)) {
+                        if (values.Count >= 1) {
+                            double topValue = values.Pop();
+                            topOperator = operators.Pop();
+
+                            try {
+                                double result = HalfOperate(intToken, topOperator, topValue);
+                                values.Push(result);
+                            }
+                            catch (ArgumentException) {
+                                return new FormulaError();
+                            }
+                        }
+                    }
+                    else { values.Push(intToken); }
+                }
+                else { values.Push(intToken); }
+            }
+
+            // Additon or subtraction case
+            else if (isAddOrSubtract(token)) {
+                if (operators.Count > 0) {
+                    string topOperator = operators.Peek();
+                    if (isAddOrSubtract(topOperator)) {
+                        if (values.Count >= 2) {
+                            try {
+                                double result = FullOperate(values, operators);
+                                values.Push(result);
+                            }
+                            catch(ArgumentException) {
+                                return new FormulaError();
+                            }
+                        }
+                    }
+                }
+                operators.Push(token);
+            }
+
+            // Multiplication or division case
+            else if (isMultiplyOrDivide(token)) {
+                operators.Push(token);
+            }
+
+            // Left parenthesis case
+            else if (isOpenParen(token)) {
+                operators.Push(token);
+            }
+
+            //Right parenthesis case
+            else if (token == ")") {
+                if (operators.Count > 0) {
+                    string topOperator = operators.Peek();
+                    if (isAddOrSubtract(topOperator)) {
+                        if (values.Count >= 2) {
+
+                            try {
+                                double result = FullOperate(values, operators);
+                                values.Push(result);
+                            }
+                            catch (ArgumentException) {
+                                return new FormulaError();
+                            }
+
+                            if (operators.Count > 0) {
+                                topOperator = operators.Peek();
+                            }
+                        }
+                    }
+
+                    if (isOpenParen(topOperator)) {
+                        operators.Pop();
+                        if (operators.Count > 0) {
+                            topOperator = operators.Peek();
+                        }
+                    }
+                    else { throw new ArgumentException(); }
+                    if (operators.Count > 0) {
+                        if (isMultiplyOrDivide(topOperator)) {
+                            if (values.Count >= 2) {
+                                try {
+                                    double result = FullOperate(values, operators);
+                                    values.Push(result);
+                                }
+                                catch (ArgumentException) {
+                                    return new FormulaError();
+                                }
+                            }
+                        }
+                    }
+                }
+                else throw new ArgumentException();
+
+            }
+        }
+
+        // Once the last token has been processed, validate the curent state
+        // or throw an argument exception
+        if (operators.Count == 0) {
+            if (values.Count == 1) {
+                return values.Pop();
+            }
+            else {
+                return new FormulaError("Failed to evaluate expression: Did you enter a valid expression?");
+            }
+        }
+        else if (operators.Count == 1 && values.Count == 2) {
+            if (operators.Peek() == "+" || operators.Peek() == "-") {
+                try {
+                    return FullOperate(values, operators);
+                } catch (ArgumentException) {
+                    return new FormulaError();
+                }
+            }
+            else throw new ArgumentException("Failed to evaluate expression: Did you enter a valid expression?");
+        }
+        else throw new ArgumentException("Failed to evaluate expression: Did you enter a valid expression?");
+
     }
 
     /// <summary>
@@ -252,6 +385,28 @@ public class Formula {
 
     }
 
+    private void AddTokensandNormalizeVariables(Func<string, string> normalize, Func<string, bool> isValid, List<string> tokens) {
+        foreach (string token in tokens) {
+            if (IsVariable(token)) {
+                if (isValid(normalize(token))) {
+                    normalizedTokens.Add(normalize(token));
+
+                    if (!variables.Contains(normalize(token))) {
+                        variables.Add(normalize(token));
+                    }
+                }
+            }
+            else if (IsNumber(token)) {
+                Double d = Double.Parse(token);
+                string s = d.ToString();
+                normalizedTokens.Add(s);
+            }
+            else {
+                normalizedTokens.Add(token);
+            }
+        }
+    }
+
     private static bool FormulaHasValidTokens(List<string> tokens) {
         // Parsing
         foreach (string token in tokens) {
@@ -318,7 +473,7 @@ public class Formula {
 
         // Parenthesis/Operator Following Rule
         foreach (string token in tokens) {
-            if (IsOpenParen(token) || IsCloseParen(token)) {
+            if (IsOpenParen(token) || IsOperator(token)) {
                 int parenIndex = tokens.IndexOf(token);
                 string followingToken = tokens.ElementAt(parenIndex + 1);
                 if (!(IsNumber(followingToken) || IsOpenParen(followingToken) || IsVariable(followingToken))) {
@@ -387,6 +542,113 @@ public class Formula {
             return true;
         }
         else return false;
+    }
+
+    // Begin PS1 helper methods
+    /// <summary>
+    /// Applies an operator string to the two provided values
+    /// </summary>
+    /// <param name="value1"></param>
+    /// <param name="op"></param>
+    /// <param name="value2"></param>
+    /// <returns>The integer result of the operation</returns>
+    /// <exception cref="ArgumentException"></exception>
+    static double HalfOperate(double value1, string op, double value2) {
+
+        switch (op) {
+            case "+":
+                return value1 + value2;
+            case "-":
+                return value2 - value1;
+            case "*":
+                return value1 * value2;
+            case "/":
+                if (value1 == 0) {
+                    throw new ArgumentException("Illegal: division by zero");
+                }
+                return value2 / value1; //Integer division 
+            default:
+                throw new ArgumentException("Illegal operator");
+        }
+    }
+    /// <summary>
+    /// Applies the given operator to top to values in the provided stack
+    /// </summary>
+    /// <param name="values"> The stack of values</param>
+    /// <param name="operators">The operation to be performed </param>
+    /// <returns>The integer result of the operation</returns>
+    /// <exception cref="ArgumentException"></exception>
+    static double FullOperate(Stack<double> values, Stack<string> operators) {
+        double value1 = values.Pop();
+        double value2 = values.Pop();
+
+        string topOperator = operators.Pop();
+
+        switch (topOperator) {
+            case "+":
+                return value1 + value2;
+            case "-":
+                return value2 - value1;
+            case "*":
+                return value1 * value2;
+            case "/":
+                if (value1 == 0) {
+                    throw new ArgumentException("Illegal: division by zero");
+                }
+                return value2 / value1; //Integer division 
+            default:
+                throw new ArgumentException("Illegal operator");
+        }
+    }
+
+    /// <summary>
+    /// Returns true of the token string matches the variable pattern of
+    /// one or more letters followed by one ore more digits.
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns>A boolean result</returns>
+    private static bool isVariable(string token) {
+        string variablepattern = "^[A-Za-z]+\\d+$";
+        return Regex.IsMatch(token, variablepattern);
+    }
+    /// <summary>
+    /// Returns true if the given string is a "*" or a "/"
+    /// </summary>
+    /// <param name="token"> the string </param>
+    /// <returns>A boolean result</returns>
+    private static bool isMultiplyOrDivide(string token) {
+        if (token == "*" || token == "/") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    /// <summary>
+    /// Returns true if the given string is a "("
+    /// </summary>
+    /// <param name="token"> The string </param>
+    /// <returns>A boolean result</returns>
+    private static bool isOpenParen(string token) {
+        if (token == "(") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    /// <summary>
+    /// Returns true if the given string is a "+" or a "-"
+    /// </summary>
+    /// <param name="token"> The string</param>
+    /// <returns>A boolean result</returns>
+    private static bool isAddOrSubtract(string token) {
+        if (token == "+" || token == "-") {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }
 
