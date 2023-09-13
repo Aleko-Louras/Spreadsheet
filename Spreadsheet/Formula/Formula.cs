@@ -32,6 +32,7 @@ namespace SpreadsheetUtilities;
 /// </summary>
 public class Formula {
     private readonly List<string> variables = new();
+    private readonly List<string> normalizedTokens = new();
     /// <summary>
     /// Creates a Formula from a string that consists of an infix expression written as
     /// described in the class comment.  If the expression is syntactically invalid,
@@ -73,7 +74,7 @@ public class Formula {
         List<string> tokens = enumerableTokens.ToList();
 
         //Loop through the list, adding tokens and normalized  variables
-        List<string> normalizedTokens = new();
+        
         foreach(string token in tokens) {
             if (IsVariable(token)) {
                 if (isValid(normalize(token))) {
@@ -85,6 +86,10 @@ public class Formula {
                 } else {
                     throw new FormulaFormatException("Bad variable");
                 }
+            } else if (IsNumber(token)) {
+                Double d = Double.Parse(token);
+                string s = d.ToString();
+                normalizedTokens.Add(s);
             } else {
                 normalizedTokens.Add(token);
             }
@@ -146,7 +151,8 @@ public class Formula {
     /// new Formula("x + Y").ToString() should return "x+Y"
     /// </summary>
     public override string ToString() {
-        return "";
+        string formulaString = string.Join("", normalizedTokens);
+        return formulaString;
     }
 
     /// <summary>
@@ -169,7 +175,14 @@ public class Formula {
     /// new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")) is true
     /// </summary>
     public override bool Equals(object? obj) {
-        return false;
+        if (obj == null || obj is not Formula) return false;
+
+        if (obj.ToString() == this.ToString()) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     /// <summary>
@@ -231,10 +244,14 @@ public class Formula {
                 IsVariable(token) ||
                 IsNumber(token) ||
                 IsOpenParen(token) ||
-                IsCloseParen(token))
-                return true;
+                IsCloseParen(token)) {
+                continue;
+            }
+            else {
+                throw new FormulaFormatException("Formula Format Exception: Invalid token found, check formula");
+            }
         }
-        throw new FormulaFormatException("Formula Format Exception: Invalid token found, check formula");
+        return true;
     }
 
     private static bool FormulaHasValidSyntax(List<string> tokens) {
