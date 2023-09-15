@@ -31,8 +31,11 @@ namespace SpreadsheetUtilities;
 /// Their use is described in detail in the constructor and method comments.
 /// </summary>
 public class Formula {
+
     private readonly List<string> variables = new();
+    // This structure holds the formula with valid syntax, and normalized vars
     private readonly List<string> normalizedTokens = new();
+
     /// <summary>
     /// Creates a Formula from a string that consists of an infix expression written as
     /// described in the class comment.  If the expression is syntactically invalid,
@@ -68,13 +71,14 @@ public class Formula {
     /// new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect.
     /// </summary>
     public Formula(string formula, Func<string, string> normalize, Func<string, bool> isValid) {
+
         IEnumerable<string> enumerableTokens = GetTokens(formula);
         List<string> tokens = enumerableTokens.ToList();
 
         AddTokensandNormalizeVariables(normalize, isValid, tokens);
-        FormulaHasValidTokens(normalizedTokens);
         FormulaHasValidSyntax(normalizedTokens);
-
+        FormulaHasValidTokens(normalizedTokens);
+        
     }
 
     
@@ -109,7 +113,7 @@ public class Formula {
         foreach (string token in normalizedTokens) {
 
             //Variable case, lookup the variable, then procede as in integer case.
-            if (isVariable(token)) {
+            if (IsVariable(token)) {
                 double varValue = lookup(token); //Variable evaluation is handled by delegated function
 
                 if (operators.Count > 0) {
@@ -230,32 +234,23 @@ public class Formula {
                         }
                     }
                 }
-                else throw new ArgumentException();
-
             }
         }
 
         // Once the last token has been processed, validate the curent state
         // or throw an argument exception
         if (operators.Count == 0) {
-            if (values.Count == 1) {
-                return values.Pop();
-            }
-            else {
-                return new FormulaError("Failed to evaluate expression: Did you enter a valid expression?");
-            }
+            return values.Pop();
+
         }
         else if (operators.Count == 1 && values.Count == 2) {
             if (operators.Peek() == "+" || operators.Peek() == "-") {
-                try {
-                    return FullOperate(values, operators);
-                } catch (ArgumentException) {
-                    return new FormulaError();
-                }
+                return FullOperate(values, operators);
+
             }
-            else throw new ArgumentException("Failed to evaluate expression: Did you enter a valid expression?");
+            else return new FormulaError();
         }
-        else throw new ArgumentException("Failed to evaluate expression: Did you enter a valid expression?");
+        else return new FormulaError();
 
     }
 
@@ -384,7 +379,15 @@ public class Formula {
         }
 
     }
-
+    /// <summary>
+    /// If normalized variables are valid, they are added to the normalizedTokens
+    /// and the varialbes lists. If the variable not in the variables list it is
+    /// added otherwise it is not added. Numbers are parsed as doubles and added
+    /// to the normalizedTokens list. Other tokens are added. 
+    /// </summary>
+    /// <param name="normalize"> the Normalizer </param>
+    /// <param name="isValid"> the Validator </param>
+    /// <param name="tokens"> the list of tokens </param>
     private void AddTokensandNormalizeVariables(Func<string, string> normalize, Func<string, bool> isValid, List<string> tokens) {
         foreach (string token in tokens) {
             if (IsVariable(token)) {
@@ -394,7 +397,7 @@ public class Formula {
                     if (!variables.Contains(normalize(token))) {
                         variables.Add(normalize(token));
                     }
-                }
+                }// TODO: Maybe throw here that the variable wasn't valid??
             }
             else if (IsNumber(token)) {
                 Double d = Double.Parse(token);
@@ -407,6 +410,14 @@ public class Formula {
         }
     }
 
+    /// <summary>
+    /// Returns true if the list of tokens are all valid
+    /// Otherwise throws a Formula Format Exception taht
+    /// an invalid token was found 
+    /// </summary>
+    /// <param name="tokens"></param>
+    /// <returns></returns>
+    /// <exception cref="FormulaFormatException"></exception>
     private static bool FormulaHasValidTokens(List<string> tokens) {
         // Parsing
         foreach (string token in tokens) {
@@ -424,6 +435,13 @@ public class Formula {
         return true;
     }
 
+    /// <summary>
+    /// Returns true if the Formula has valid syntax.
+    /// Otherwise throws a Formula Format Exception. 
+    /// </summary>
+    /// <param name="tokens"> The formula to check </param>
+    /// <returns></returns>
+    /// <exception cref="FormulaFormatException"></exception>
     private static bool FormulaHasValidSyntax(List<string> tokens) {
 
         // One token rule
@@ -471,11 +489,12 @@ public class Formula {
                 " number, a variable, or a closing parenthesis.");
         }
 
+
         // Parenthesis/Operator Following Rule
-        foreach (string token in tokens) {
-            if (IsOpenParen(token) || IsOperator(token)) {
-                int parenIndex = tokens.IndexOf(token);
-                string followingToken = tokens.ElementAt(parenIndex + 1);
+        for (int i = 0; i < tokens.Count; i++) {
+            if (IsOpenParen(tokens[i]) || IsOperator(tokens[i])) {
+                string followingToken = tokens[i + 1];
+
                 if (!(IsNumber(followingToken) || IsOpenParen(followingToken) || IsVariable(followingToken))) {
                     throw new FormulaFormatException(
                         "Formula Format Exception: Any token that immediately " +
@@ -486,12 +505,12 @@ public class Formula {
         }
 
         // Extra Following Rule
-        foreach (string token in tokens) {
+        for (int i = 0; i < tokens.Count; i++) {
             if (tokens.Count == 1) break;
-            if (tokens.IndexOf(token) == tokens.Count - 1) break;
-            if (IsNumber(token) || IsVariable(token)  || IsCloseParen(token)) {
-                int parenIndex = tokens.IndexOf(token);
-                string followingToken = tokens.ElementAt(parenIndex + 1);
+            if (i == tokens.Count - 1) break;
+
+            if (IsNumber(tokens[i]) || IsVariable(tokens[i]) || IsCloseParen(tokens[i])) {
+                string followingToken = tokens[i + 1];
 
                 if (!(IsOperator(followingToken) || IsCloseParen(followingToken))) {
                     throw new FormulaFormatException(
@@ -499,13 +518,18 @@ public class Formula {
                         "follows a number, a variable, or a closing parenthesis " +
                         "must be either an operator or a closing parenthesis.");
                 }
-
             }
         }
 
         return true;
     }
 
+    /// <summary>
+    /// Returns true if the string matches the number pattern.
+    /// Otherwise returns false. 
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
     private static bool IsNumber(string token) {
         string doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: [eE][\+-]?\d+)?";
         if (Regex.IsMatch(token, doublePattern, RegexOptions.IgnorePatternWhitespace)) {
@@ -513,14 +537,30 @@ public class Formula {
         }
         else return false;
     }
+    /// <summary>
+    /// Returns true if the string matches the variable pattern.
+    /// If the varialbe is recognized as a number it returns false. 
+    /// Otherwise returns false. 
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
     private static bool IsVariable(string token) {
+        if (Double.TryParse(token, out double d)) {
+            return false;
+        }
+        
         string varPattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
         if (Regex.IsMatch(token, varPattern)) {
             return true;
         }
         else return false;
     }
-
+    /// <summary>
+    /// Returns true if the string matches the operator pattern. 
+    /// Otherwise returns false. 
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
     private static bool IsOperator(string token) {
         string opPattern = @"[\+\-*/]";
         if (Regex.IsMatch(token, opPattern)) {
@@ -529,6 +569,12 @@ public class Formula {
         else return false;
     }
 
+    /// <summary>
+    /// Returns true if the string matches an open paren
+    /// Otherwise returns false. 
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
     private static bool IsOpenParen(string token) {
         string lpPattern = @"\(";
         if (Regex.IsMatch(token, lpPattern)) {
@@ -536,6 +582,13 @@ public class Formula {
         }
         else return false;
     }
+
+    /// <summary>
+    /// Returns true if the string matches the number pattern.
+    /// Otherwise returns false. 
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
     private static bool IsCloseParen(string token) {
         string rpPattern = @"\)";
         if (Regex.IsMatch(token, rpPattern)) {
@@ -544,7 +597,6 @@ public class Formula {
         else return false;
     }
 
-    // Begin PS1 helper methods
     /// <summary>
     /// Applies an operator string to the two provided values
     /// </summary>
@@ -553,7 +605,7 @@ public class Formula {
     /// <param name="value2"></param>
     /// <returns>The integer result of the operation</returns>
     /// <exception cref="ArgumentException"></exception>
-    static double HalfOperate(double value1, string op, double value2) {
+    private static double HalfOperate(double value1, string op, double value2) {
 
         switch (op) {
             case "+":
@@ -578,7 +630,7 @@ public class Formula {
     /// <param name="operators">The operation to be performed </param>
     /// <returns>The integer result of the operation</returns>
     /// <exception cref="ArgumentException"></exception>
-    static double FullOperate(Stack<double> values, Stack<string> operators) {
+    private static double FullOperate(Stack<double> values, Stack<string> operators) {
         double value1 = values.Pop();
         double value2 = values.Pop();
 
@@ -601,16 +653,7 @@ public class Formula {
         }
     }
 
-    /// <summary>
-    /// Returns true of the token string matches the variable pattern of
-    /// one or more letters followed by one ore more digits.
-    /// </summary>
-    /// <param name="token"></param>
-    /// <returns>A boolean result</returns>
-    private static bool isVariable(string token) {
-        string variablepattern = "^[A-Za-z]+\\d+$";
-        return Regex.IsMatch(token, variablepattern);
-    }
+    
     /// <summary>
     /// Returns true if the given string is a "*" or a "/"
     /// </summary>
