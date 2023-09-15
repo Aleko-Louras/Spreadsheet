@@ -1,9 +1,7 @@
 ﻿namespace FormulaTests;
-using Newtonsoft.Json.Linq;
 
-using System.Runtime.InteropServices;
 using SpreadsheetUtilities;
-using System.ComponentModel.DataAnnotations;
+
 
 [TestClass]
 public class FormulaTests {
@@ -30,6 +28,17 @@ public class FormulaTests {
 
         Assert.ThrowsException<FormulaFormatException>(() => {
             Formula f = new Formula("@"); });
+
+
+    }
+
+    // Format Exception if Validator returns emtpty, a number, or 
+    [TestMethod]
+    public void FormatExeptionBadNormalizer() {
+
+        Assert.ThrowsException<FormulaFormatException>(() => {
+            Formula f = new Formula("A1 + 1", s => "", s => true);
+        });
 
 
     }
@@ -146,6 +155,26 @@ public class FormulaTests {
 
     }
 
+    [TestMethod()]
+    public void FormulaFormatEceptions() {
+
+        static bool Validator1(string s) {
+            return Char.IsLower(s[0]);
+        }
+        static string Normalizer1(string s) {
+            return s.ToLower();
+        }
+        Assert.ThrowsException<FormulaFormatException>(() => {
+            Formula f = new Formula("1 / $^"); });
+        Assert.ThrowsException<FormulaFormatException>(() => {
+            Formula f = new Formula("1 / 1_a"); });
+        Assert.ThrowsException<FormulaFormatException>(() => {
+            Formula f = new Formula("1 / _1", Normalizer1, Validator1); });
+
+        Assert.ThrowsException<FormulaFormatException>(() => {
+            Formula f = new Formula("5 + 5 + A1", s => s, s => false); });
+    }
+
     // ################### Floating Point Math Tests ##############################
     [TestMethod]
     public void SimpleAddition() {
@@ -165,9 +194,15 @@ public class FormulaTests {
         Assert.IsInstanceOfType(f.Evaluate(v => 0), typeof(FormulaError));
     }
 
+    [TestMethod]
+    public void ScientificNotation() {
+        Formula f = new Formula("1 * 1.23E2");
+        Assert.AreEqual(123D, f.Evaluate(v => 0));
+    }
 
-    // ################### Formula Method Tests ####################################
+    // ############ Formula Method Tests ####################################
 
+    // ################# GetVariables #########################################
     // A Formula with no Variables should return no variables
     [TestMethod]
     public void GetNoVariablesTest() {
@@ -236,6 +271,7 @@ public class FormulaTests {
         Assert.ThrowsException<FormulaFormatException>(() => { Formula f = new Formula("1+$^+1"); });
     }
 
+    // ###################### ToString #####################################
     [TestMethod]
     public void ToStringTest() {
         Formula f = new Formula("1+1");
@@ -261,15 +297,59 @@ public class FormulaTests {
     }
 
     [TestMethod]
-    public void EqualsTest() {
+    public void ToStringWithMultipleNonNormalizedVariablesTest() {
+        Formula f = new Formula("1+a1 + X6 ", N, s => true);
+        string result = "1+A1+X6";
+
+        Assert.IsTrue(result.Equals(f.ToString()));
+    }
+
+    [TestMethod]
+    public void ToStringNotEqualTest() {
+        Formula f = new Formula("1+b1 + X6 ", N, s => true);
+        string result = "1+A1+X6";
+
+        Assert.IsTrue(!(result.Equals(f.ToString())));
+    }
+
+    // ############################# Equals ##################################
+
+    [TestMethod]
+    public void BasicEqualsTest() {
+
+        Formula f = new Formula("a1 + 1");
+        Formula g = new Formula("a1 + 1");
+
+        Assert.IsTrue(f.Equals(g));
+
+    }
+
+    [TestMethod]
+    public void NormilizationEqualsTest() {
+
+        Assert.IsTrue(new Formula("x1+y2", N, s => true).Equals(new Formula("X1  +  Y2")));
+
+    }
+
+    [TestMethod]
+    public void WhiteSpaceEqualsTest() {
 
         Assert.IsTrue(new Formula("x1+y2", N, s => true).Equals(new Formula("X1  +  Y2")));
         Assert.IsFalse(new Formula("x1+y2").Equals(new Formula("X1+Y2")));
         Assert.IsFalse(new Formula("x1+y2").Equals(new Formula("y2+x1")));
         Formula f = new Formula("2.0 + x7");
         Formula g = new Formula("2.000 + x7");
-        Assert.IsTrue(new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")));
- 
+        Assert.IsTrue(f.Equals(g));
+
+    }
+
+    [TestMethod]
+    public void DoubleNumbersEqualsTest() {
+
+        Formula f = new Formula("2.0 + x7");
+        Formula g = new Formula("2.000 + x7");
+        Assert.IsTrue(f.Equals(g));
+
     }
 
     [TestMethod]
@@ -281,6 +361,8 @@ public class FormulaTests {
         Assert.IsFalse(f.Equals(s));
 
     }
+
+    // ############################ == and !=  ####################################
 
     [TestMethod]
     public void OperatorEqualsTest() {
@@ -294,6 +376,13 @@ public class FormulaTests {
     }
 
     [TestMethod]
+    public void SimilarFormulasAreEqual() {
+        Formula f = new Formula("2.0 + x7");
+        Formula g = new Formula("2.000 + x7");
+        Assert.IsTrue(new Formula("2.0 + x7") == (new Formula("2.000 + x7")));
+    }
+
+    [TestMethod]
     public void OperatorNotEqulasTest() {
         Assert.IsTrue(new Formula("x1+y2") != (new Formula("X1+Y2")));
         Assert.IsTrue(new Formula("x1+y2") != (new Formula("y2+x1")));
@@ -301,6 +390,8 @@ public class FormulaTests {
         Formula g = new Formula("2.000 + x7");
         Assert.IsFalse(new Formula("2.0 + x7") != (new Formula("2.000 + x7")));
     }
+
+    // ########################### GetHashCode ###############################
 
     [TestMethod]
     public void IdenticalFormulasHaveSameHashCodeTest() {
@@ -340,6 +431,7 @@ public class FormulaTests {
         Assert.IsFalse(fHashCode == gHashCode);
     }
 
+    //######################### Evaluate Tests ##############################
 
     [TestMethod]
     public void EvaluateTest() {
@@ -353,16 +445,10 @@ public class FormulaTests {
     }
 
     [TestMethod]
-    public void ScientificNotation() {
-        Formula f = new Formula("1 * 1.23E2");
-        Assert.AreEqual(123D, f.Evaluate(v => 0));
-    }
-
-    [TestMethod]
     public void VariableReturnsScientificNotation() {
 
         Formula f = new Formula("1 * A1");
-        
+
         Assert.AreEqual(123D, f.Evaluate(s => 1.23E2));
     }
 
@@ -490,7 +576,7 @@ public class FormulaTests {
     [TestCategory("18")]
     public void TestDivideByZero() {
         Formula f = new Formula("5/0");
-        Assert.AreEqual(new FormulaError(), f.Evaluate(s => 0));
+        Assert.AreEqual(new FormulaError("Error: Division by Zero"), f.Evaluate(s => 0));
     }
 
     [TestMethod(), Timeout(5000)]
@@ -586,23 +672,4 @@ public class FormulaTests {
         Formula f = new Formula("a4-a4*a4/a4");
         Assert.AreEqual(0D, f.Evaluate(s => 3));
     }
-
-    [TestMethod(), Timeout(5000)]
-    public void FormulaFormatEceptions() {
-
-        static bool Validator1(string s) {
-            return Char.IsLower(s[0]);
-        }
-        static string Normalizer1(string s) {
-            return s.ToLower();
-        }
-        Assert.ThrowsException<FormulaFormatException>(delegate { Formula f = new Formula("1 / $^"); });
-        Assert.ThrowsException<FormulaFormatException>(delegate { Formula f = new Formula("1 / 1_a"); });
-        Assert.ThrowsException<FormulaFormatException>(delegate { Formula f = new Formula("1 / _1", Normalizer1, Validator1); });
-   
-        Assert.ThrowsException<FormulaFormatException>(delegate { Formula f = new Formula("5 + 5 + A1", s => s, s => false); });
-    }
-
-
-
 }
