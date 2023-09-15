@@ -154,7 +154,7 @@ public class Formula {
                                 values.Push(result);
                             }
                             catch (ArgumentException) {
-                                return new FormulaError();
+                                return new FormulaError("Error: Division by Zero");
                             }
                         }
                     }
@@ -174,7 +174,7 @@ public class Formula {
                                 values.Push(result);
                             }
                             catch(ArgumentException) {
-                                return new FormulaError();
+                                return new FormulaError("Error: Division by Zero");
                             }
                         }
                     }
@@ -204,7 +204,7 @@ public class Formula {
                                 values.Push(result);
                             }
                             catch (ArgumentException) {
-                                return new FormulaError();
+                                return new FormulaError("Error: Division by Zero");
                             }
 
                             if (operators.Count > 0) {
@@ -228,7 +228,7 @@ public class Formula {
                                     values.Push(result);
                                 }
                                 catch (ArgumentException) {
-                                    return new FormulaError();
+                                    return new FormulaError("Error: Division by Zero");
                                 }
                             }
                         }
@@ -238,7 +238,6 @@ public class Formula {
         }
 
         // Once the last token has been processed, validate the curent state
-        // or throw an argument exception
         if (operators.Count == 0) {
             return values.Pop();
 
@@ -397,7 +396,7 @@ public class Formula {
                     if (!variables.Contains(normalize(token))) {
                         variables.Add(normalize(token));
                     }
-                }// TODO: Maybe throw here that the variable wasn't valid??
+                }
             }
             else if (IsNumber(token)) {
                 Double d = Double.Parse(token);
@@ -618,9 +617,9 @@ public class Formula {
                 if (value1 == 0) {
                     throw new ArgumentException("Illegal: division by zero");
                 }
-                return value2 / value1; //Integer division 
+                return value2 / value1; 
             default:
-                throw new ArgumentException("Illegal operator");
+                throw new ArgumentException();
         }
     }
     /// <summary>
@@ -647,9 +646,9 @@ public class Formula {
                 if (value1 == 0) {
                     throw new ArgumentException("Illegal: division by zero");
                 }
-                return value2 / value1; //Integer division 
+                return value2 / value1; 
             default:
-                throw new ArgumentException("Illegal operator");
+                throw new ArgumentException();
         }
     }
 
