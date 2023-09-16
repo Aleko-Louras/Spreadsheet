@@ -81,8 +81,6 @@ public class Formula {
         
     }
 
-    
-
     /// <summary>
     /// Evaluates this Formula, using the lookup delegate to determine the values of
     /// variables.  When a variable symbol v needs to be determined, it should be looked up
