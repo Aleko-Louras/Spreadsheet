@@ -3,6 +3,14 @@
 using SpreadsheetUtilities;
 
 
+/// <summary>
+/// This is a test class for the Formula class
+/// It provides tests for the Formula constructor as
+/// well as every public method.
+///
+/// Quinn Pritchett
+/// September 2023
+/// </summary>
 [TestClass]
 public class FormulaTests {
 
