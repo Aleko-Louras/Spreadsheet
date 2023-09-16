@@ -6,12 +6,12 @@ using SpreadsheetUtilities;
 [TestClass]
 public class FormulaTests {
 
-    // Validator
+    // Validator - all variables are legal
     static bool V (string v) {
         return true;
     }
 
-    // Normalizer
+    // Normalizer - all variables should have uppercase 
     static string N(string v) {
         return v.ToUpper();
     }
@@ -28,6 +28,20 @@ public class FormulaTests {
 
         Assert.ThrowsException<FormulaFormatException>(() => {
             Formula f = new Formula("@"); });
+
+
+    }
+
+    [TestMethod]
+    public void FormatExeptionInvalidToken() {
+
+        Assert.ThrowsException<FormulaFormatException>(() => {
+            Formula f = new Formula("^$");
+        });
+
+        Assert.ThrowsException<FormulaFormatException>(() => {
+            Formula f = new Formula("@");
+        });
 
 
     }
@@ -452,6 +466,14 @@ public class FormulaTests {
         Assert.AreEqual(123D, f.Evaluate(s => 1.23E2));
     }
 
+    [TestMethod]
+    public void NegativeNumbers() {
+
+        Formula f = new Formula("1 - 5 + 4");
+
+        Assert.AreEqual(0D, f.Evaluate(s => 1.23E2));
+    }
+
     [TestMethod(), Timeout(5000)]
     [TestCategory("1")]
     public void TestSingleNumber() {
@@ -671,5 +693,60 @@ public class FormulaTests {
     public void TestRepeatedVar() {
         Formula f = new Formula("a4-a4*a4/a4");
         Assert.AreEqual(0D, f.Evaluate(s => 3));
+    }
+
+    [TestMethod(), Timeout(5000)]
+    [TestCategory("29")]
+    public void TestDoubleDivision() {
+        Formula f = new Formula("3 / 2");
+        Assert.AreEqual(1.5D, f.Evaluate(s => 3));
+    }
+
+    /// <summary>
+    /// Tests several bad expression and counts the number of
+    /// format exceptions. All expression must throw FormatExceptions to pass
+    /// </summary>
+    [TestMethod()]
+    public void BadExpressions() {
+        //Test invalid expressions
+        string[] invalidExpressions = new string[] {
+            "(((((())))))",
+            "()",
+            "+",
+            "A B C D",
+            "1 2 3",
+            "(",
+            ")",
+            "(1",
+            "1)",
+            "1+1)",
+            "7 (5)",
+            "6 + ( + 4)",
+            "This is the way",
+            ") + 5",
+            "(5+5))",
+            " 1 + + 1",
+            "-1 - 1",
+            "1(2+3)",
+            "+6",
+            " 235 ^ 235",
+            "234$$242",
+            "(-5)",
+            "97(5)",
+        };
+
+        int errorCounter = 0;
+        for (int i = 0; i < invalidExpressions.Length; i++) {
+            try {
+                Formula f = new Formula(invalidExpressions[i]);
+            }
+            catch (FormulaFormatException e) {
+                Console.WriteLine(i);
+                errorCounter += 1;
+            }
+        }
+
+        Assert.AreEqual(23, errorCounter);
+
     }
 }
