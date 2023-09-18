@@ -185,12 +185,11 @@ public class DependencyGraph {
     /// </summary>
     public void ReplaceDependents(string s, IEnumerable<string> newDependents) {
 
-        foreach ((string, string) pair in dependencies) {
-            if (pair.Item1 == s) {
-                RemoveDependency(pair.Item1, pair.Item2);
+        if (dependents.ContainsKey(s)) {
+            foreach (string dependent in dependents[s].ToList()) {
+                RemoveDependency(s, dependent);
             }
         }
-
         foreach (string dependent in newDependents) {
             AddDependency(s, dependent);
         }
@@ -204,12 +203,11 @@ public class DependencyGraph {
     /// </summary>
     public void ReplaceDependees(string s, IEnumerable<string> newDependees) {
 
-        foreach ((string, string) pair in dependencies) {
-            if (pair.Item2 == s) {
-                RemoveDependency(pair.Item1, pair.Item2);
+        if (dependees.ContainsKey(s)) {
+            foreach (string dependee in dependees[s].ToList()) {
+                RemoveDependency(dependee, s);
             }
         }
-
         foreach (string dependee in newDependees) {
             AddDependency(dependee, s);
         }
