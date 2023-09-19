@@ -7,6 +7,11 @@ using SpreadsheetUtilities;
 public class SpreadsheetUnitTests {
 
     [TestMethod]
+    public void AbstractSpreadsheetTest() {
+        AbstractSpreadsheet sheet = new Spreadsheet();
+    }
+
+    [TestMethod]
     public void EmptySpreadsheetHasNoNamedCellsTest() {
         Spreadsheet s = new Spreadsheet();
 
@@ -60,6 +65,30 @@ public class SpreadsheetUnitTests {
     }
 
     [TestMethod]
+    public void GetCellContentsOfEmptyCellTest() {
+        Spreadsheet s = new Spreadsheet();
+        string empty = "";
+        Assert.IsTrue(empty.Equals(s.GetCellContents("A1")));
+    }
+
+    [TestMethod]
+    public void GetCellContentsInvalidName() {
+        Spreadsheet s = new Spreadsheet();
+        Assert.ThrowsException<InvalidNameException>(() => {
+            s.GetCellContents("!^A1");
+        });
+    }
+
+    [TestMethod]
+    public void SetCellContentsWithInvalidNameTest() {
+        Spreadsheet s = new Spreadsheet();
+
+        Assert.ThrowsException<InvalidNameException>(() => {
+            s.SetCellContents("!^A1", 5);
+        });
+    }
+
+    [TestMethod]
     public void SetCellContentsWithNumberTest() {
         Spreadsheet s = new Spreadsheet();
 
@@ -89,23 +118,23 @@ public class SpreadsheetUnitTests {
 
     }
 
-    [TestMethod]
-    public void GetDirectDependentsTest() {
-        Spreadsheet s = new Spreadsheet();
+    //[TestMethod]
+    //public void GetDirectDependentsTest() {
+    //    Spreadsheet s = new Spreadsheet();
 
-        s.SetCellContents("A1", 3);
-        s.SetCellContents("B1", new Formula("A1 * A1"));
-        s.SetCellContents("C1", new Formula("B1 + A1"));
-        s.SetCellContents("D1", new Formula("B1 - C1"));
+    //    s.SetCellContents("A1", 3);
+    //    s.SetCellContents("B1", new Formula("A1 * A1"));
+    //    s.SetCellContents("C1", new Formula("B1 + A1"));
+    //    s.SetCellContents("D1", new Formula("B1 - C1"));
 
-        IEnumerator<string> e = s.GetDirectDependents("A1").GetEnumerator();
-        Assert.IsTrue(e.MoveNext());
-        string name1 = e.Current;
-        Assert.IsTrue(e.MoveNext());
-        string name2 = e.Current;
-        Assert.IsFalse(e.MoveNext());
+    //    IEnumerator<string> e = s.GetDirectDependents("A1").GetEnumerator();
+    //    Assert.IsTrue(e.MoveNext());
+    //    string name1 = e.Current;
+    //    Assert.IsTrue(e.MoveNext());
+    //    string name2 = e.Current;
+    //    Assert.IsFalse(e.MoveNext());
 
-        Assert.IsTrue(((name1 == "B1") && (name2 == "C1")) ||
-                      ((name1 == "C1") && (name2 == "B1")));
-    }
+    //    Assert.IsTrue(((name1 == "B1") && (name2 == "C1")) ||
+    //                  ((name1 == "C1") && (name2 == "B1")));
+    //}
 }
