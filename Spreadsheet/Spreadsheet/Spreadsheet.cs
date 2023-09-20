@@ -33,7 +33,7 @@ namespace SS {
 
         public override object GetCellContents(string name) {
             if (IsValid(name)) {
-                if (IsNonEmptyCell(name)) {
+                if (IsInNonEmptyCells(name)) {
                     return NonEmptyCells[name].Contents;
                 }
                 else {
@@ -53,7 +53,8 @@ namespace SS {
                 throw new InvalidNameException();
             }
             else {
-                NonEmptyCells.Add(name, new Cell(name, number));
+                NonEmptyCells.UpdateOrAdd(name, number);
+                DG.ReplaceDependees(name, new List<string>()); // Reset dependees
                 return GetCellsToRecalculate(name).ToList();
             }
         }
@@ -62,8 +63,14 @@ namespace SS {
             if (!IsValid(name)) {
                 throw new InvalidNameException();
             }
+            if (text.Equals("") && NonEmptyCells.ContainsKey(name)) {
+                NonEmptyCells.Remove(name); // Cell is now empty
+                DG.ReplaceDependees(name, new List<string>()); // Reset dependees
+                return GetCellsToRecalculate(name).ToList(); // Not sure here
+            }
             else {
-                NonEmptyCells.Add(name, new Cell(name, text));
+                NonEmptyCells.UpdateOrAdd(name, text);
+                DG.ReplaceDependees(name, new List<string>()); // Reset dependees
                 return GetCellsToRecalculate(name).ToList();
             }
         }
@@ -73,12 +80,17 @@ namespace SS {
                 throw new InvalidNameException();
             }
             else {
-                NonEmptyCells.Add(name, new Cell(name, formula));
-
+                NonEmptyCells.UpdateOrAdd(name, formula);
+                DG.ReplaceDependees(name, new List<string>()); // Reset dependees
                 foreach (string variable in formula.GetVariables()) {
                     DG.AddDependency(variable, name);
                 }
-                return GetCellsToRecalculate(name).ToList();
+                try {
+                    return GetCellsToRecalculate(name).ToList();
+                }
+                catch (CircularException) {
+                    throw new CircularException();
+                }
             }
         }
 
@@ -107,9 +119,11 @@ namespace SS {
         /// </summary>
         /// <param name="name"> The cell name </param>
         /// <returns> A boolean representing if the cell is non-empty</returns>
-        private bool IsNonEmptyCell(string name) {
+        private bool IsInNonEmptyCells(string name) {
             return NonEmptyCells.ContainsKey(name);
         }
+
+        
     }
 
     /// <summary>
@@ -127,29 +141,28 @@ namespace SS {
         private object cellContents;
 
         public object Contents {
-            get {
-                return cellContents;
-            }
+            get { return cellContents; }
+            set { cellContents = Contents; }
         }
         public string Name {
-            get {
-                return cellName;
+            get { return cellName; }
+            set { cellName = Name; }
+        }
+
+        public Cell(string name, object contents) {
+            cellName = name;
+            cellContents = contents;
+        }
+    }
+
+    internal static class DictionaryExtensions {
+        public static void UpdateOrAdd(this Dictionary<string, Cell> dictionary, string name, object contents) {
+            if (dictionary.ContainsKey(name)) {
+                dictionary[name].Contents = contents;
             }
-        }
-
-        public Cell(string name, double number) {
-            cellName = name;
-            cellContents = number;
-        }
-
-        public Cell(string name, string text) {
-            cellName = name;
-            cellContents = text;
-        }
-
-        public Cell(string name, Formula formula) {
-            cellName = name;
-            cellContents = formula;
+            else {
+                dictionary.Add(name, new Cell(name, contents));
+            }
         }
     }
 }
