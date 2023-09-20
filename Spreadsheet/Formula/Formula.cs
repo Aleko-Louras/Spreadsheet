@@ -112,7 +112,12 @@ public class Formula {
 
             //Variable case, lookup the variable, then procede as in integer case.
             if (IsVariable(token)) {
-                double varValue = lookup(token); //Variable evaluation is handled by delegated function
+                double varValue;
+                try {
+                    varValue = lookup(token); //Variable evaluation is handled by delegated function
+                } catch (ArgumentException) {
+                    return new FormulaError();
+                }
 
                 if (operators.Count > 0) {
                     string topOperator = operators.Peek();
@@ -547,6 +552,7 @@ public class Formula {
         }
         
         string varPattern = @"[a-zA-Z_](?: [a-zA-Z_]|\d)*";
+        //string varPattern = "^[_a-zA-Z][_a-zA-Z0-9]*";
         if (Regex.IsMatch(token, varPattern)) {
             return true;
         }
@@ -559,7 +565,7 @@ public class Formula {
     /// <param name="token"></param>
     /// <returns></returns>
     private static bool IsOperator(string token) {
-        string opPattern = @"[\+\-*/]";
+        string opPattern = @"^[\+\-*/]";
         if (Regex.IsMatch(token, opPattern)) {
             return true;
         }
