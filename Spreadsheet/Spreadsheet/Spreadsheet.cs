@@ -4,8 +4,6 @@
 /// Quinn Pritchett
 /// September 2023
 ///
-
-
 using System.Text.RegularExpressions;
 using SpreadsheetUtilities;
 
@@ -35,8 +33,7 @@ namespace SS {
             if (IsValid(name)) {
                 if (IsInNonEmptyCells(name)) {
                     return NonEmptyCells[name].Contents;
-                }
-                else {
+                } else {
                     return "";
                 }
             } else {
@@ -51,8 +48,7 @@ namespace SS {
         public override IList<string> SetCellContents(string name, double number) {
             if (!IsValid(name)) {
                 throw new InvalidNameException();
-            }
-            else {
+            } else {
                 NonEmptyCells.UpdateOrAdd(name, number);
                 DG.ReplaceDependees(name, new List<string>()); // Reset dependees
                 return GetCellsToRecalculate(name).ToList();
@@ -66,9 +62,11 @@ namespace SS {
             if (text.Equals("") && NonEmptyCells.ContainsKey(name)) {
                 NonEmptyCells.Remove(name); // Cell is now empty
                 DG.ReplaceDependees(name, new List<string>()); // Reset dependees
-                return GetCellsToRecalculate(name).ToList(); // Not sure here
-            }
-            else {
+                // The cell is now empty, should we clear it's dependents?
+                // No, the graph is a separate concern. Keep the relationship
+                // even if the contents are empty 
+                return GetCellsToRecalculate(name).ToList();
+            } else {
                 NonEmptyCells.UpdateOrAdd(name, text);
                 DG.ReplaceDependees(name, new List<string>()); // Reset dependees
                 return GetCellsToRecalculate(name).ToList();
@@ -78,17 +76,12 @@ namespace SS {
         public override IList<string> SetCellContents(string name, Formula formula) {
             if (!IsValid(name)) {
                 throw new InvalidNameException();
-            }
-            else {
+            } else {
                 NonEmptyCells.UpdateOrAdd(name, formula);
-                DG.ReplaceDependees(name, new List<string>()); // Reset dependees
-                foreach (string variable in formula.GetVariables()) {
-                    DG.AddDependency(variable, name);
-                }
+                DG.ReplaceDependees(name, formula.GetVariables());
                 try {
                     return GetCellsToRecalculate(name).ToList();
-                }
-                catch (CircularException) {
+                } catch (CircularException) {
                     throw new CircularException();
                 }
             }
@@ -108,8 +101,9 @@ namespace SS {
             string varPattern = "^[_a-zA-Z][_a-zA-Z0-9]*";
             if (Regex.IsMatch(name, varPattern)) {
                 return true;
+            } else {
+                return false;
             }
-            else return false;
         }
 
         /// <summary>
@@ -123,7 +117,7 @@ namespace SS {
             return NonEmptyCells.ContainsKey(name);
         }
 
-        
+
     }
 
     /// <summary>
@@ -159,8 +153,7 @@ namespace SS {
         public static void UpdateOrAdd(this Dictionary<string, Cell> dictionary, string name, object contents) {
             if (dictionary.ContainsKey(name)) {
                 dictionary[name].Contents = contents;
-            }
-            else {
+            } else {
                 dictionary.Add(name, new Cell(name, contents));
             }
         }
