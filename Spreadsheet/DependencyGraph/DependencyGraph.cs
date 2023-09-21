@@ -78,8 +78,7 @@ public class DependencyGraph {
     public int NumDependees(string s) {
         if (HasDependees(s)) {
             return GetDependees(s).Count();
-        }
-        else { return 0; }
+        } else { return 0; }
     }
 
 
@@ -89,8 +88,7 @@ public class DependencyGraph {
     public bool HasDependents(string s) {
         if (dependents.TryGetValue(s, out HashSet<string>? sDependents) && sDependents.Count > 0) {
             return true;
-        }
-        else return false;
+        } else return false;
     }
 
 
@@ -100,8 +98,7 @@ public class DependencyGraph {
     public bool HasDependees(string s) {
         if (dependees.TryGetValue(s, out HashSet<string>? sDependees) && sDependees.Count > 0) {
             return true;
-        }
-        else return false;
+        } else return false;
     }
 
 
@@ -111,12 +108,10 @@ public class DependencyGraph {
     public IEnumerable<string> GetDependents(string s) {
         if (HasDependents(s)) {
             return dependents[s];
-        }
-        else {
+        } else {
             if (dependents.ContainsKey(s)) {
                 return dependents[s]; // s in is dependents dict, but has none
-            }
-            else {
+            } else {
                 return new HashSet<string>(); // s is not in dependents dict
             }
         }
@@ -129,12 +124,10 @@ public class DependencyGraph {
     public IEnumerable<string> GetDependees(string s) {
         if (HasDependees(s)) {
             return dependees[s];
-        }
-        else {
+        } else {
             if (dependees.ContainsKey(s)) {
                 return dependees[s]; // s in is dependees dict, but has none
-            }
-            else {
+            } else {
                 return new HashSet<string>(); // s not in dependees dict
             }
         }
@@ -221,8 +214,7 @@ public class DependencyGraph {
     private void AddDependent(string s, string t) {
         if (!dependents.ContainsKey(s)) {
             dependents.Add(s, new HashSet<string> { t });
-        }
-        else {
+        } else {
             dependents[s].Add(t); // s already has dependents, add another for t
         }
     }
@@ -236,8 +228,7 @@ public class DependencyGraph {
     private void AddDependee(string s, string t) {
         if (!dependees.ContainsKey(t)) {
             dependees.Add(t, new HashSet<string> { s });
-        }
-        else {
+        } else {
             dependees[t].Add(s);
         }
     }
