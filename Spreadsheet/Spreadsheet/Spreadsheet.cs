@@ -99,11 +99,8 @@ namespace SS {
         /// <returns></returns>
         private static bool IsValid(string name) {
             string varPattern = "^[_a-zA-Z][_a-zA-Z0-9]*";
-            if (Regex.IsMatch(name, varPattern)) {
-                return true;
-            } else {
-                return false;
-            }
+            return Regex.IsMatch(name, varPattern);
+               
         }
 
         /// <summary>
@@ -131,25 +128,27 @@ namespace SS {
     /// </summary>
     internal class Cell {
 
-        private string cellName;
-        private object cellContents;
+       public string Name { get; set; }
+       public object Contents { get; set; }
 
-        public object Contents {
-            get { return cellContents; }
-            set { cellContents = Contents; }
-        }
-        public string Name {
-            get { return cellName; }
-            set { cellName = Name; }
-        }
 
         public Cell(string name, object contents) {
-            cellName = name;
-            cellContents = contents;
+            Name = name;
+            Contents = contents;
         }
     }
 
+    /// <summary>
+    /// An extension class for Dictionary
+    /// </summary>
     internal static class DictionaryExtensions {
+
+        /// <summary>
+        /// Updates or adds a new pair to a Dictionary of strings to Cell objets 
+        /// </summary>
+        /// <param name="dictionary"></param>
+        /// <param name="name"></param>
+        /// <param name="contents"></param>
         public static void UpdateOrAdd(this Dictionary<string, Cell> dictionary, string name, object contents) {
             if (dictionary.ContainsKey(name)) {
                 dictionary[name].Contents = contents;
