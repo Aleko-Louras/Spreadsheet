@@ -173,19 +173,31 @@ public abstract class AbstractSpreadsheet {
 
     /// <summary>
     /// A helper for the GetCellsToRecalculate method.
+    /// This is an implementation of depth-first graph search
     /// 
-    ///   -- You should fully comment what is going on below --
+    ///   
     /// </summary>
     private void Visit(string start, string name, ISet<string> visited, LinkedList<string> changed) {
+        // Add the current node to the set of visited nodes
         visited.Add(name);
+
+        // Visit each of the nodes connected to the current node
         foreach (string n in GetDirectDependents(name)) {
+            // If the next node is the same as the current node, we found
+            // a cirular dependency
             if (n.Equals(start)) {
                 throw new CircularException();
             }
+            // The node hasn't been visited, so recursivley call Vist
+            // this is the key step for depth-first search. 
             else if (!visited.Contains(n)) {
                 Visit(start, n, visited, changed);
             }
         }
+
+        // Changed list keeps track of order the nodes are visited
+        // This is the list we are intersted in because we want
+        // every dependent node 
         changed.AddFirst(name);
     }
 
