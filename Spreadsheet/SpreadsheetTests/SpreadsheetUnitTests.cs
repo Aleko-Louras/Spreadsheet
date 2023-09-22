@@ -147,6 +147,33 @@ public class SpreadsheetUnitTests {
     }
 
     [TestMethod]
+    public void SetCellContentsAfterSetupTest() {
+        Spreadsheet s = new Spreadsheet();
+        s.SetCellContents("b1", new Formula("8-a1"));
+        s.SetCellContents("c1", new Formula("a1"));
+
+        List<string> expected =  new List<string> { "a1", "b1", "c1" };
+        List<string> result = s.SetCellContents("a1", 10.9).ToList();
+        CollectionAssert.AreEquivalent(expected, result);
+
+    }
+
+    [TestMethod]
+    public void SetCellContentsNestedDependencyTest() {
+        Spreadsheet s = new Spreadsheet();
+        s.SetCellContents("a1", new Formula("15.0"));
+        s.SetCellContents("b1", new Formula("5.0"));
+        s.SetCellContents("c1", new Formula("a1 + b1"));
+        s.SetCellContents("d1", new Formula("c1 + 4"));
+        s.SetCellContents("e1", new Formula("d1+ c1"));
+
+        List<string> expected = new List<string> { "a1", "c1", "d1", "e1" };
+        List<string> result = s.SetCellContents("a1", 20).ToList();
+        CollectionAssert.AreEquivalent(expected, result);
+
+    }
+
+    [TestMethod]
     public void ReplacingTest() {
         Spreadsheet s = new Spreadsheet();
 
@@ -154,7 +181,7 @@ public class SpreadsheetUnitTests {
         s.SetCellContents("A1", 3);
         s.SetCellContents("B1", new Formula("A1 + 3"));
         s.SetCellContents("C1", new Formula("B1 + 1"));
-        
+
         // Replace a middle node with a number
         // It now is no longer dependent on any other cells
         // It may still have dependents
