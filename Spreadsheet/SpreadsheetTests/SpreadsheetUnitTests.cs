@@ -1,4 +1,10 @@
-﻿namespace SpreadsheetTests;
+﻿// A test class for an implementation of Abstract Spreadsheet
+//
+// Quinn Pritchett
+// September 2023
+//
+
+namespace SpreadsheetTests;
 
 using SS;
 using SpreadsheetUtilities;
