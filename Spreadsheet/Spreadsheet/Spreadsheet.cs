@@ -4,6 +4,7 @@
 /// Quinn Pritchett
 /// September 2023
 ///
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using SpreadsheetUtilities;
 
@@ -25,12 +26,53 @@ namespace SS {
         /// </summary>
         private readonly DependencyGraph DG = new();
 
-        public Spreadsheet() {
+        ///// <summary>
+        ///// Returns true if the variable name is valid.
+        ///// Otherwise returns false
+        ///// </summary>
+        ///// <param name="variable"></param>
+        ///// <returns></returns>
+        //private delegate bool Validator(string variable);
 
+        ///// <summary>
+        ///// Returns a normalized version of a variable
+        ///// For example if all variable letters should be
+        ///// capitialed Normalizer("a1") => "A1".
+        ///// </summary>
+        ///// <param name="variable"></param>
+        ///// <returns></returns>
+        //private delegate string Normalizer(string variable);
+
+        private Func<string, string> Normalize;
+        private Func<string, bool> IsValid;
+
+        /// <summary>
+        /// Creates and empty spreadsheet that imposes
+        /// no extra validity conditions
+        ///
+        /// Normalizer: every cell name to itself
+        /// 
+        /// Version: default
+        /// </summary>
+        public Spreadsheet(): base("default") {
+            Normalize = (string name) => name;
+            IsValid = (string name) => true;
+        }
+
+        public Spreadsheet(Func<string, bool> validator, Func<string, string> normalizer, string version): base (version) {
+            IsValid = validator;
+            Normalize = normalizer;
+        }
+
+        public override void Save(string filename) {
+            if(Changed) {
+
+            }
+            throw new NotImplementedException();
         }
 
         public override object GetCellContents(string name) {
-            if (IsValid(name)) {
+            if (IsValidCellName(name)) {
                 if (IsInNonEmptyCells(name)) {
                     return NonEmptyCells[name].Contents;
                 } else {
@@ -45,8 +87,25 @@ namespace SS {
             return NonEmptyCells.Keys;
         }
 
-        public override IList<string> SetCellContents(string name, double number) {
-            if (!IsValid(name)) {
+        public override IList<string> SetContentsOfCell(string name, string content) {
+            if (IsValidCellName(name)) {
+                Changed = true;
+                if (Double.TryParse(content, out double result)) {
+                    return SetCellContents(name, result);
+                } else if (content.Length > 0 && content.ElementAt(0) == '=') {
+                    string formula = content.Substring(1);
+                    return SetCellContents(name, new Formula(formula, Normalize, IsValid));
+                } else {
+                    return SetCellContents(name, content);
+                }
+            } else {
+                throw new InvalidNameException();
+            }
+
+        }
+
+        protected override IList<string> SetCellContents(string name, double number) {
+            if (!IsValidCellName(name)) {
                 throw new InvalidNameException();
             } else {
                 NonEmptyCells.UpdateOrAdd(name, number);
@@ -55,8 +114,8 @@ namespace SS {
             }
         }
 
-        public override IList<string> SetCellContents(string name, string text) {
-            if (!IsValid(name)) {
+        protected override IList<string> SetCellContents(string name, string text) {
+            if (!IsValidCellName(name)) {
                 throw new InvalidNameException();
             }
             if (text.Equals("") && NonEmptyCells.ContainsKey(name)) {
@@ -66,6 +125,9 @@ namespace SS {
                 // No, the graph is a separate concern. Keep the relationship
                 // even if the contents are empty 
                 return GetCellsToRecalculate(name).ToList();
+            } else if (text.Equals("")) {
+                return GetCellsToRecalculate(name).ToList();
+
             } else {
                 NonEmptyCells.UpdateOrAdd(name, text);
                 DG.ReplaceDependees(name, new List<string>()); // Reset dependees
@@ -73,23 +135,30 @@ namespace SS {
             }
         }
 
-        public override IList<string> SetCellContents(string name, Formula formula) {
-            if (!IsValid(name)) {
+        protected override IList<string> SetCellContents(string name, Formula formula) {
+            if (!IsValidCellName(name)) {
                 throw new InvalidNameException();
-            } else {
-                NonEmptyCells.UpdateOrAdd(name, formula);
-                DG.ReplaceDependees(name, formula.GetVariables());
+            } else { 
                 try {
+                    foreach(string s in DG.GetDependents(name)) {
+                        if (formula.GetVariables().Contains(s)) {
+                            throw new CircularException();
+                        }
+                    }
+                    NonEmptyCells.UpdateOrAdd(name, formula);
+                    DG.ReplaceDependees(name, formula.GetVariables());
                     return GetCellsToRecalculate(name).ToList();
                 } catch (CircularException) {
+                   
                     throw new CircularException();
-                }
+                } 
             }
         }
 
         protected override IEnumerable<string> GetDirectDependents(string name) {
             return DG.GetDependents(name);
         }
+        
 
         /// <summary>
         /// Returns true if a string is a valid Cell name
@@ -97,10 +166,11 @@ namespace SS {
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        private static bool IsValid(string name) {
+        private bool IsValidCellName(string name) {
+            name = Normalize(name);
             string varPattern = "^[_a-zA-Z][_a-zA-Z0-9]*";
-            return Regex.IsMatch(name, varPattern);
-               
+
+            return Regex.IsMatch(name, varPattern) && IsValid(name) ;    
         }
 
         /// <summary>
@@ -115,6 +185,10 @@ namespace SS {
         }
 
 
+
+        public override object GetCellValue(string name) {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
