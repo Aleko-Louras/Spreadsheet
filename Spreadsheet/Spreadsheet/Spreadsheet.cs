@@ -81,9 +81,29 @@ namespace SS {
             Normalize = normalizer;
             string fileName = filepath;
             string jsonString = File.ReadAllText(fileName);
-            Spreadsheet? s = JsonSerializer.Deserialize<Spreadsheet>(jsonString)!;
-            foreach (var key in s.Cells.Keys) {
-                SetContentsOfCell(key, s.Cells[key].StringForm);
+            try {
+                Spreadsheet? s = JsonSerializer.Deserialize<Spreadsheet>(jsonString)!;
+                if (s == null) {
+                    throw new SpreadsheetReadWriteException("Null error");
+                }
+                if (s.Version != version) {
+                    throw new SpreadsheetReadWriteException("The version of the provided spreadsheet does not match");
+                }
+                foreach (string name in s.GetNamesOfAllNonemptyCells()) {
+                    if (!IsValid(name)) {
+                        throw new SpreadsheetReadWriteException("Not all cell names are valid");
+                    }
+                }
+
+                foreach (var key in s.Cells.Keys) {
+                    try {
+                        SetContentsOfCell(key, s.Cells[key].StringForm);
+                    } catch(CircularException) {
+                        throw new SpreadsheetReadWriteException("Circular dependency found: Check your spreadsheet");
+                    }
+                }
+            } catch (Exception) {
+                throw new SpreadsheetReadWriteException("Unknown error");
             }
             
         }
