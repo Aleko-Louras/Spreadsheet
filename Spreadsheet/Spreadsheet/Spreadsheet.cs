@@ -4,6 +4,7 @@
 /// Quinn Pritchett
 /// September 2023
 ///
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using SpreadsheetUtilities;
@@ -18,7 +19,12 @@ namespace SS {
         /// <summary>
         /// A mapping from names to Cell objects 
         /// </summary>
-        private readonly Dictionary<string, Cell> NonEmptyCells = new();
+        public  Dictionary<string, Cell> NonEmptyCells = new();
+        public Dictionary<string, Cell> Cells {
+            get {
+                return NonEmptyCells;
+            }
+        }
 
         /// <summary>
         /// A dependency graph for keeping track of dependencies
@@ -46,6 +52,12 @@ namespace SS {
         private Func<string, string> Normalize;
         private Func<string, bool> IsValid;
 
+        private double Lookup(string name) {
+            if (NonEmptyCells.ContainsKey(name)) {
+                return (double)NonEmptyCells[name].Value;
+            } else throw new ArgumentException("Unknown value");
+        }
+
         /// <summary>
         /// Creates and empty spreadsheet that imposes
         /// no extra validity conditions
@@ -54,23 +66,46 @@ namespace SS {
         /// 
         /// Version: default
         /// </summary>
-        public Spreadsheet(): base("default") {
+        public Spreadsheet() : base("default") {
             Normalize = (string name) => name;
             IsValid = (string name) => true;
         }
 
-        public Spreadsheet(Func<string, bool> validator, Func<string, string> normalizer, string version): base (version) {
+        public Spreadsheet(Func<string, bool> validator, Func<string, string> normalizer, string version) : base(version) {
             IsValid = validator;
             Normalize = normalizer;
         }
 
-        public override void Save(string filename) {
-            if(Changed) {
-
+        public Spreadsheet(string filepath, Func<string, bool> validator, Func<string, string> normalizer, string version) : base(version) {
+            IsValid = validator;
+            Normalize = normalizer;
+            string fileName = filepath;
+            string jsonString = File.ReadAllText(fileName);
+            Spreadsheet? s = JsonSerializer.Deserialize<Spreadsheet>(jsonString)!;
+            foreach (var key in s.Cells.Keys) {
+                SetContentsOfCell(key, s.Cells[key].StringForm);
             }
-            throw new NotImplementedException();
+            
         }
 
+        [JsonConstructor]
+        public Spreadsheet(Dictionary<string,Cell> Cells, string version): base(version) {
+            NonEmptyCells = Cells;
+            Normalize = (string name) => name;
+            IsValid = (string name) => true;
+        }
+
+        public override void Save(string filename) {
+
+            string fileName = filename;
+            JsonSerializerOptions options = new() {
+                WriteIndented = true
+            };
+            string jsonString = JsonSerializer.Serialize(this, options);
+            File.WriteAllText(fileName, jsonString);
+            Changed = false;
+
+        }
         public override object GetCellContents(string name) {
             if (IsValidCellName(name)) {
                 if (IsInNonEmptyCells(name)) {
@@ -91,17 +126,22 @@ namespace SS {
             if (IsValidCellName(name)) {
                 Changed = true;
                 if (Double.TryParse(content, out double result)) {
+                    IList<string> cellsToUpdate = SetCellContents(name, result);
+                    UpdateCells(cellsToUpdate);
                     return SetCellContents(name, result);
                 } else if (content.Length > 0 && content.ElementAt(0) == '=') {
                     string formula = content.Substring(1);
+                    IList<string> cellsToUpdate = SetCellContents(name, new Formula(formula, Normalize, IsValid));
+                    UpdateCells(cellsToUpdate);
                     return SetCellContents(name, new Formula(formula, Normalize, IsValid));
                 } else {
+                    IList<string> cellsToUpdate = SetCellContents(name, content);
+                    UpdateCells(cellsToUpdate);
                     return SetCellContents(name, content);
                 }
             } else {
                 throw new InvalidNameException();
             }
-
         }
 
         protected override IList<string> SetCellContents(string name, double number) {
@@ -138,27 +178,27 @@ namespace SS {
         protected override IList<string> SetCellContents(string name, Formula formula) {
             if (!IsValidCellName(name)) {
                 throw new InvalidNameException();
-            } else { 
+            } else {
                 try {
-                    foreach(string s in DG.GetDependents(name)) {
+                    foreach (string s in DG.GetDependents(name)) {
                         if (formula.GetVariables().Contains(s)) {
                             throw new CircularException();
                         }
                     }
-                    NonEmptyCells.UpdateOrAdd(name, formula);
+                    NonEmptyCells.UpdateOrAdd(name, formula, Lookup);
                     DG.ReplaceDependees(name, formula.GetVariables());
                     return GetCellsToRecalculate(name).ToList();
                 } catch (CircularException) {
-                   
+
                     throw new CircularException();
-                } 
+                }
             }
         }
 
         protected override IEnumerable<string> GetDirectDependents(string name) {
             return DG.GetDependents(name);
         }
-        
+
 
         /// <summary>
         /// Returns true if a string is a valid Cell name
@@ -170,7 +210,7 @@ namespace SS {
             name = Normalize(name);
             string varPattern = "^[_a-zA-Z][_a-zA-Z0-9]*";
 
-            return Regex.IsMatch(name, varPattern) && IsValid(name) ;    
+            return Regex.IsMatch(name, varPattern) && IsValid(name);
         }
 
         /// <summary>
@@ -187,7 +227,24 @@ namespace SS {
 
 
         public override object GetCellValue(string name) {
-            throw new NotImplementedException();
+            if (!IsValidCellName(name)) {
+                throw new InvalidNameException();
+            }
+            if (NonEmptyCells.ContainsKey(name)) {
+                return NonEmptyCells[name].Value;
+
+            } else {
+                return "";
+            }
+        }
+
+        private void UpdateCells(IList<string> cellsToUpdate) {
+            foreach (string cellName in cellsToUpdate) {
+                if (NonEmptyCells.ContainsKey(cellName)) {
+                    object s = NonEmptyCells[cellName].Contents;
+                    NonEmptyCells[cellName].Reevaluate(Lookup);
+                }
+            }
         }
     }
 
@@ -200,15 +257,46 @@ namespace SS {
     ///
     /// Contents can be a number, text or a Formula 
     /// </summary>
-    internal class Cell {
+    public class Cell {
+        //public string Name { get; set; }
+        [JsonIgnore]
+        public object Contents { get; set; }
+        [JsonIgnore]
+        public object Value { get; set; }
+        public string StringForm { get; set; }
 
-       public string Name { get; set; }
-       public object Contents { get; set; }
-
-
-        public Cell(string name, object contents) {
-            Name = name;
+        public Cell(string name, string contents) {
+            //Name = name;
             Contents = contents;
+            Value = contents;
+            StringForm = contents;
+
+        }
+        public Cell(string name, Formula contents, Func<string, double> lookup) {
+            //Name = name;
+            Contents = contents;
+            StringForm = contents.ToString();
+            Value = contents.Evaluate(lookup);
+        }
+        public Cell(string name, double contents) {
+            //Name = name;
+            Contents = contents;
+            StringForm = contents.ToString();
+            Value = contents;
+        }
+
+        [JsonConstructor]
+        public Cell(string stringform) {
+            StringForm = stringform;
+            //Name = "";
+            Contents = "";
+            Value = "";
+        }
+
+        public void Reevaluate(Func<string, double> lookup) {
+            if (Contents is Formula formula) {
+                Value = formula.Evaluate(lookup);
+            }
         }
     }
 
@@ -223,11 +311,42 @@ namespace SS {
         /// <param name="dictionary"></param>
         /// <param name="name"></param>
         /// <param name="contents"></param>
-        public static void UpdateOrAdd(this Dictionary<string, Cell> dictionary, string name, object contents) {
+        public static void UpdateOrAdd(this Dictionary<string, Cell> dictionary, string name, string contents) {
             if (dictionary.ContainsKey(name)) {
+                // TODO: If the dictionary contained the Cell
+                //       we need to update both the contents and the value
                 dictionary[name].Contents = contents;
+                dictionary[name].Value = contents;
             } else {
                 dictionary.Add(name, new Cell(name, contents));
+            }
+        }
+        /// <summary>
+        /// Updates or adds a new pair to a Dictionary of strings to Cell objets 
+        /// </summary>
+        /// <param name="dictionary"></param>
+        /// <param name="name"></param>
+        /// <param name="contents"></param>
+        public static void UpdateOrAdd(this Dictionary<string, Cell> dictionary, string name, double contents) {
+            if (dictionary.ContainsKey(name)) {
+                dictionary[name].Contents = contents;
+                dictionary[name].Value = contents;
+            } else {
+                dictionary.Add(name, new Cell(name, contents));
+            }
+        }
+        /// <summary>
+        /// Updates or adds a new pair to a Dictionary of strings to Cell objets 
+        /// </summary>
+        /// <param name="dictionary"></param>
+        /// <param name="name"></param>
+        /// <param name="contents"></param>
+        public static void UpdateOrAdd(this Dictionary<string, Cell> dictionary, string name, Formula contents, Func<string, double> lookup) {
+            if (dictionary.ContainsKey(name)) {
+                dictionary[name].Contents = contents;
+                dictionary[name].Value = contents.Evaluate(lookup);
+            } else {
+                dictionary.Add(name, new Cell(name, contents, lookup));
             }
         }
     }
