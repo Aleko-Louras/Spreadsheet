@@ -52,9 +52,21 @@ namespace SS {
         private Func<string, string> Normalize;
         private Func<string, bool> IsValid;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         private double Lookup(string name) {
-            if (NonEmptyCells.ContainsKey(name)) {
-                return (double)NonEmptyCells[name].Value;
+            if (NonEmptyCells.ContainsKey(name) ) {
+                var Value = NonEmptyCells[name].Value;
+
+                if (Value is double) {
+                    return (double)Value;
+                } else {
+                    throw new ArgumentException("Formula Error");
+                } 
             } else throw new ArgumentException("Unknown value");
         }
 
@@ -116,14 +128,18 @@ namespace SS {
         }
 
         public override void Save(string filename) {
+            try {
+                string fileName = filename;
+                JsonSerializerOptions options = new() {
+                    WriteIndented = true
+                };
 
-            string fileName = filename;
-            JsonSerializerOptions options = new() {
-                WriteIndented = true
-            };
-            string jsonString = JsonSerializer.Serialize(this, options);
-            File.WriteAllText(fileName, jsonString);
-            Changed = false;
+                string jsonString = JsonSerializer.Serialize(this, options);
+                File.WriteAllText(fileName, jsonString);
+                Changed = false;
+            } catch (Exception) {
+                throw new SpreadsheetReadWriteException("Erorr opening writing, or clsosing the file");
+            }
 
         }
         public override object GetCellContents(string name) {
