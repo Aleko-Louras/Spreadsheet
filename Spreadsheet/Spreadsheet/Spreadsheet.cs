@@ -60,7 +60,9 @@ namespace SS {
         private Func<string, bool> IsValid;
 
         /// <summary>
-        /// 
+        /// Returns the values for variables in a Formula
+        /// by finding them in the list of Nonempty cells.
+        /// If variable is not defined, throws an ArgumentException
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -303,6 +305,7 @@ namespace SS {
 
         /// <summary>
         /// Recalculates all cells in the cellsToUpdate list
+        /// by calling the Cell reevaluate method
         /// </summary>
         /// <param name="cellsToUpdate"></param>
         private void UpdateCells(IList<string> cellsToUpdate) {
