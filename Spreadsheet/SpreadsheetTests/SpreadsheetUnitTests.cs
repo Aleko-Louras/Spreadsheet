@@ -160,27 +160,27 @@ public class SpreadsheetUnitTests {
         Assert.AreEqual(9, (double)s.GetCellValue("A4"), 1e-9);
     }
 
-    ///// <summary>
-    ///// Testing Json serilization of a double, formula and string cell
-    ///// </summary>
-    //[TestMethod]
-    //public void JsonTest() {
-    //    AbstractSpreadsheet s = new Spreadsheet(TestValidator, TestNormalizer, "default");
-    //    s.SetContentsOfCell("A1", "5");
-    //    s.SetContentsOfCell("A2", "=A1+2");
-    //    s.SetContentsOfCell("A3", "My great string cell");
-    //    s.Save("threecells.json");
-    //}
+    /// <summary>
+    /// Testing Json serilization of a double, formula and string cell
+    /// </summary>
+    [TestMethod]
+    public void JsonTest() {
+        AbstractSpreadsheet s = new Spreadsheet(TestValidator, TestNormalizer, "default");
+        s.SetContentsOfCell("A1", "5");
+        s.SetContentsOfCell("A2", "=A1+2");
+        s.SetContentsOfCell("A3", "My great string cell");
+        s.Save("threecells.json");
+    }
 
-    ///// <summary>
-    ///// If the save path is invalid, a SpreadsheetReadWriteException shouldbe thrown
-    ///// </summary>
-    //[TestMethod]
-    //[ExpectedException(typeof(SpreadsheetReadWriteException))]
-    //public void EmptySpreadsheetJsonTest() {
-    //    AbstractSpreadsheet s = new Spreadsheet(TestValidator, TestNormalizer, "default");
-    //    s.Save("/missing/save.json");
-    //}
+    /// <summary>
+    /// If the save path is invalid, a SpreadsheetReadWriteException shouldbe thrown
+    /// </summary>
+    [TestMethod]
+    [ExpectedException(typeof(SpreadsheetReadWriteException))]
+    public void EmptySpreadsheetJsonTest() {
+        AbstractSpreadsheet s = new Spreadsheet(TestValidator, TestNormalizer, "default");
+        s.Save("/missing/save.json");
+    }
 
     // Setting the contents of a cell should cause the Changed property to be true
     [TestMethod]
@@ -192,21 +192,24 @@ public class SpreadsheetUnitTests {
     }
 
 
-    //[TestMethod]
-    //[ExpectedException(typeof(SpreadsheetReadWriteException))]
-    //public void MismatchedVersionsThrowsTest() {
-    //    AbstractSpreadsheet s = new Spreadsheet("mycells.json", TestValidator, TestNormalizer, "wrong_version");
-    //}
+    [TestMethod]
+    [ExpectedException(typeof(SpreadsheetReadWriteException))]
+    public void MismatchedVersionsThrowsTest() {
+        AbstractSpreadsheet s = new Spreadsheet(TestValidator, TestNormalizer, "default");
+        s.SetContentsOfCell("A1", "1");
+        s.Save("mycells.json");
+        AbstractSpreadsheet ss = new Spreadsheet("mycells.json", TestValidator, TestNormalizer, "wrong_version");
+    }
 
-    //[TestMethod]
-    //[ExpectedException(typeof(SpreadsheetReadWriteException))]
-    //public void InvalidVariableNamesThrowsTest() {
-    //    AbstractSpreadsheet s = new Spreadsheet();
-    //    s.SetContentsOfCell("A1", "5");
-    //    s.SetContentsOfCell("B2", "=A1+2");
-    //    s.Save("bad_names.json");
-    //    s = new Spreadsheet("bad_names.json", TestValidator, TestNormalizer, "default");
-    //}
+    [TestMethod]
+    [ExpectedException(typeof(SpreadsheetReadWriteException))]
+    public void InvalidVariableNamesThrowsTest() {
+        AbstractSpreadsheet s = new Spreadsheet();
+        s.SetContentsOfCell("A1", "5");
+        s.SetContentsOfCell("B2", "=A1+2");
+        s.Save("bad_names.json");
+        s = new Spreadsheet("bad_names.json", TestValidator, TestNormalizer, "default");
+    }
 
 
     /// <summary>
