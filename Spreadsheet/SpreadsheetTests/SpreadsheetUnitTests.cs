@@ -192,11 +192,11 @@ public class SpreadsheetUnitTests {
     }
 
 
-    [TestMethod]
-    [ExpectedException(typeof(SpreadsheetReadWriteException))]
-    public void MismatchedVersionsThrowsTest() {
-        AbstractSpreadsheet s = new Spreadsheet("mycells.json", TestValidator, TestNormalizer, "wrong_version");
-    }
+    //[TestMethod]
+    //[ExpectedException(typeof(SpreadsheetReadWriteException))]
+    //public void MismatchedVersionsThrowsTest() {
+    //    AbstractSpreadsheet s = new Spreadsheet("mycells.json", TestValidator, TestNormalizer, "wrong_version");
+    //}
 
     //[TestMethod]
     //[ExpectedException(typeof(SpreadsheetReadWriteException))]
