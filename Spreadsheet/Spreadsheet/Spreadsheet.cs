@@ -49,7 +49,14 @@ namespace SS {
         ///// <returns></returns>
         //private delegate string Normalizer(string variable);
 
+        /// <summary>
+        /// Stores the default or provided Normalizer
+        /// </summary>
         private Func<string, string> Normalize;
+
+        /// <summary>
+        /// Stores the default or provided Validator
+        /// </summary>
         private Func<string, bool> IsValid;
 
         /// <summary>
@@ -83,11 +90,26 @@ namespace SS {
             IsValid = (string name) => true;
         }
 
+        /// <summary>
+        /// Creates a spreadsheet using the provided validator, normalizer and version
+        /// </summary>
+        /// <param name="validator"></param>
+        /// <param name="normalizer"></param>
+        /// <param name="version"></param>
         public Spreadsheet(Func<string, bool> validator, Func<string, string> normalizer, string version) : base(version) {
             IsValid = validator;
             Normalize = normalizer;
         }
 
+        /// <summary>
+        /// A user provided path to file will construct a new spreadsheet from the file
+        /// This uses the provided validator, normalizer and version. 
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="validator"></param>
+        /// <param name="normalizer"></param>
+        /// <param name="version"></param>
+        /// <exception cref="SpreadsheetReadWriteException"></exception>
         public Spreadsheet(string filepath, Func<string, bool> validator, Func<string, string> normalizer, string version) : base(version) {
             IsValid = validator;
             Normalize = normalizer;
@@ -120,6 +142,11 @@ namespace SS {
             
         }
 
+        /// <summary>
+        /// A constructor for deserializing a spreadsheet
+        /// </summary>
+        /// <param name="Cells"></param>
+        /// <param name="version"></param>
         [JsonConstructor]
         public Spreadsheet(Dictionary<string,Cell> Cells, string version): base(version) {
             NonEmptyCells = Cells;
@@ -274,6 +301,10 @@ namespace SS {
             }
         }
 
+        /// <summary>
+        /// Recalculates all cells in the cellsToUpdate list
+        /// </summary>
+        /// <param name="cellsToUpdate"></param>
         private void UpdateCells(IList<string> cellsToUpdate) {
             foreach (string cellName in cellsToUpdate) {
                 if (NonEmptyCells.ContainsKey(cellName)) {
@@ -294,7 +325,6 @@ namespace SS {
     /// Contents can be a number, text or a Formula 
     /// </summary>
     public class Cell {
-        //public string Name { get; set; }
         [JsonIgnore]
         public object Contents { get; set; }
         [JsonIgnore]
@@ -302,20 +332,17 @@ namespace SS {
         public string StringForm { get; set; }
 
         public Cell(string name, string contents) {
-            //Name = name;
             Contents = contents;
             Value = contents;
             StringForm = contents;
 
         }
         public Cell(string name, Formula contents, Func<string, double> lookup) {
-            //Name = name;
             Contents = contents;
             StringForm = contents.ToString();
             Value = contents.Evaluate(lookup);
         }
         public Cell(string name, double contents) {
-            //Name = name;
             Contents = contents;
             StringForm = contents.ToString();
             Value = contents;
@@ -324,11 +351,14 @@ namespace SS {
         [JsonConstructor]
         public Cell(string stringform) {
             StringForm = stringform;
-            //Name = "";
             Contents = "";
             Value = "";
         }
 
+        /// <summary>
+        /// Calls the Evaluate method if the Cell contains a formula 
+        /// </summary>
+        /// <param name="lookup"></param>
         public void Reevaluate(Func<string, double> lookup) {
             if (Contents is Formula formula) {
                 Value = formula.Evaluate(lookup);
@@ -349,8 +379,6 @@ namespace SS {
         /// <param name="contents"></param>
         public static void UpdateOrAdd(this Dictionary<string, Cell> dictionary, string name, string contents) {
             if (dictionary.ContainsKey(name)) {
-                // TODO: If the dictionary contained the Cell
-                //       we need to update both the contents and the value
                 dictionary[name].Contents = contents;
                 dictionary[name].Value = contents;
             } else {
