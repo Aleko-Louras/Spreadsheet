@@ -116,8 +116,9 @@ namespace SS {
             IsValid = validator;
             Normalize = normalizer;
             string fileName = filepath;
-            string jsonString = File.ReadAllText(fileName);
+            
             try {
+                string jsonString = File.ReadAllText(fileName);
                 Spreadsheet? s = JsonSerializer.Deserialize<Spreadsheet>(jsonString)!;
                 if (s == null) {
                     throw new SpreadsheetReadWriteException("Null error");
@@ -167,11 +168,12 @@ namespace SS {
                 File.WriteAllText(fileName, jsonString);
                 Changed = false;
             } catch (Exception) {
-                throw new SpreadsheetReadWriteException("Erorr opening writing, or clsosing the file");
+                throw new SpreadsheetReadWriteException("Erorr opening, writing, or closing the file");
             }
 
         }
         public override object GetCellContents(string name) {
+            name = Normalize(name);
             if (IsValidCellName(name)) {
                 if (IsInNonEmptyCells(name)) {
                     return NonEmptyCells[name].Contents;
@@ -313,6 +315,7 @@ namespace SS {
                 if (NonEmptyCells.ContainsKey(cellName)) {
                     object s = NonEmptyCells[cellName].Contents;
                     NonEmptyCells[cellName].Reevaluate(Lookup);
+                    
                 }
             }
         }
@@ -342,7 +345,7 @@ namespace SS {
         }
         public Cell(string name, Formula contents, Func<string, double> lookup) {
             Contents = contents;
-            StringForm = contents.ToString();
+            StringForm =  contents.ToString();
             Value = contents.Evaluate(lookup);
         }
         public Cell(string name, double contents) {
@@ -366,6 +369,9 @@ namespace SS {
             if (Contents is Formula formula) {
                 Value = formula.Evaluate(lookup);
             }
+            if (Contents is double) {
+                StringForm = ((double)Contents).ToString();
+            }
         }
     }
 
@@ -383,6 +389,7 @@ namespace SS {
         public static void UpdateOrAdd(this Dictionary<string, Cell> dictionary, string name, string contents) {
             if (dictionary.ContainsKey(name)) {
                 dictionary[name].Contents = contents;
+                dictionary[name].StringForm = contents;
                 dictionary[name].Value = contents;
             } else {
                 dictionary.Add(name, new Cell(name, contents));
@@ -411,6 +418,7 @@ namespace SS {
         public static void UpdateOrAdd(this Dictionary<string, Cell> dictionary, string name, Formula contents, Func<string, double> lookup) {
             if (dictionary.ContainsKey(name)) {
                 dictionary[name].Contents = contents;
+                dictionary[name].StringForm = "=" + contents.ToString();
                 dictionary[name].Value = contents.Evaluate(lookup);
             } else {
                 dictionary.Add(name, new Cell(name, contents, lookup));
