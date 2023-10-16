@@ -10,17 +10,43 @@
         </MenuBarItem>
     </ContentPage.MenuBarItems>
 
-    <Grid RowDefinitions="40, 40, *">
-        <Button
-            Text="My New Button"
-            Grid.Row="0"/>
-        <Label
-            x:Name="foo"
-            Text="Hello"
-            Grid.Row="1"/>
+    <Grid RowDefinitions="40, *">
+        
+        <HorizontalStackLayout>
+            <Border StrokeThickness="7"
+                   Stroke="#000000" >
+                <Label
+                x:Name="CellName"
+                Text="A1"
+                Grid.Row="1"
+                Padding="40"/>
+            </Border>
+          
+            <Border StrokeThickness="7"
+                   Stroke="#000" >
+                <Entry
+                x:Name="Contents"
+                Placeholder="Enter text"
+                Text=""
+                Grid.Row="1"
+                Completed="OnCompleted"
+                />
+               </Border>
+            <Border StrokeThickness="7"
+                   Stroke="#000" >
+                <Label
+                x:Name="Value"
+                Text="Value"
+                Grid.Row="1"
+                Padding="40"/>
+               </Border>
+               
+
+        </HorizontalStackLayout>
+        
         <SS:SpreadsheetGrid
             x:Name="spreadsheetGrid"
-            Grid.Row="3"/>
+            Grid.Row="2"/>
         
     </Grid>
     

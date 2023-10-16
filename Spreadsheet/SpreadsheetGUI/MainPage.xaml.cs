@@ -7,6 +7,8 @@ namespace SpreadsheetGUI;
 /// </summary>
 public partial class MainPage : ContentPage
 {
+    Spreadsheet s = new Spreadsheet();
+   
 
     /// <summary>
     /// Constructor for the demo
@@ -25,15 +27,20 @@ public partial class MainPage : ContentPage
         spreadsheetGrid.SetSelection(0, 0);
     }
 
+
     private void displaySelection(ISpreadsheetGrid grid)
     {
+        Contents.Focus();
+
         spreadsheetGrid.GetSelection(out int col, out int row);
         spreadsheetGrid.GetValue(col, row, out string value);
         if (value == "")
         {
             spreadsheetGrid.SetValue(col, row, "New cell");
             spreadsheetGrid.GetValue(col, row, out value);
-            foo.Text = value;
+            string cellName = ((char)('A' + col)).ToString();
+            CellName.Text = cellName + (row + 1);
+
             //DisplayAlert("Selection:", "column " + col + " row " + row + " value " + value, "OK");
         }
     }
@@ -42,7 +49,15 @@ public partial class MainPage : ContentPage
     {
         spreadsheetGrid.Clear();
     }
+    private void OnCompleted(Object sender, EventArgs e) {
+        
+        spreadsheetGrid.GetSelection(out int col, out int row);
+        string cellName = ((char)('A' + col)).ToString();
+        CellName.Text = cellName + (row + 1);
+        s.SetContentsOfCell(CellName.Text, Contents.Text);
 
+        spreadsheetGrid.SetValue(col, row,s.GetCellValue(CellName.Text).ToString() );
+    }
     /// <summary>
     /// Opens any file as text and prints its contents.
     /// Note the use of async and await, concepts we will learn more about
