@@ -31,17 +31,16 @@ public partial class MainPage : ContentPage
     private void displaySelection(ISpreadsheetGrid grid)
     {
         Contents.Focus();
-
+  
         spreadsheetGrid.GetSelection(out int col, out int row);
         spreadsheetGrid.GetValue(col, row, out string value);
+        Contents.Text = value;
         if (value == "")
         {
-            spreadsheetGrid.SetValue(col, row, "New cell");
+            Contents.Text = "";
             spreadsheetGrid.GetValue(col, row, out value);
             string cellName = ((char)('A' + col)).ToString();
             CellName.Text = cellName + (row + 1);
-
-            //DisplayAlert("Selection:", "column " + col + " row " + row + " value " + value, "OK");
         }
     }
 
