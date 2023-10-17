@@ -1,4 +1,5 @@
 ﻿using SS;
+using SpreadsheetUtilities;
 
 namespace SpreadsheetGUI;
 
@@ -35,13 +36,29 @@ public partial class MainPage : ContentPage
         spreadsheetGrid.GetSelection(out int col, out int row);
         spreadsheetGrid.GetValue(col, row, out string value);
         Contents.Text = value;
+        
         if (value == "")
         {
             Contents.Text = "";
             spreadsheetGrid.GetValue(col, row, out value);
             string cellName = ((char)('A' + col)).ToString();
             CellName.Text = cellName + (row + 1);
+            //Value.Text = s.GetCellValue(CellName.Text).ToString();
         }
+        else {
+            string cellName = ((char)('A' + col)).ToString();
+            CellName.Text = cellName + (row + 1);
+            Value.Text = s.GetCellValue(CellName.Text).ToString();
+            if ( s.GetCellContents(CellName.Text).GetType() == typeof(Formula)) {
+                string withoutEquals = s.GetCellContents(CellName.Text).ToString();
+                string withEquals = "=" + withoutEquals;
+                Contents.Text = withEquals;
+                Value.Text = s.GetCellValue(CellName.Text).ToString();
+
+            }
+            
+        }
+     
     }
 
     private void NewClicked(Object sender, EventArgs e)
@@ -54,7 +71,7 @@ public partial class MainPage : ContentPage
         string cellName = ((char)('A' + col)).ToString();
         CellName.Text = cellName + (row + 1);
         s.SetContentsOfCell(CellName.Text, Contents.Text);
-
+        Value.Text = s.GetCellValue(CellName.Text).ToString();
         spreadsheetGrid.SetValue(col, row,s.GetCellValue(CellName.Text).ToString() );
     }
     /// <summary>
