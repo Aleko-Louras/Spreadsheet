@@ -43,7 +43,7 @@ public partial class MainPage : ContentPage
             spreadsheetGrid.GetValue(col, row, out value);
             string cellName = ((char)('A' + col)).ToString();
             CellName.Text = cellName + (row + 1);
-            //Value.Text = s.GetCellValue(CellName.Text).ToString();
+            Value.Text = "";
         }
         else {
             string cellName = ((char)('A' + col)).ToString();
