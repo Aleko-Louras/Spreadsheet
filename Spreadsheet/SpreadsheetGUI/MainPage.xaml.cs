@@ -41,13 +41,12 @@ public partial class MainPage : ContentPage
         {
             Contents.Text = "";
             spreadsheetGrid.GetValue(col, row, out value);
-            string cellName = ((char)('A' + col)).ToString();
-            CellName.Text = cellName + (row + 1);
+            CellName.Text = getLetterName(col, row);
             Value.Text = "";
         }
         else {
-            string cellName = ((char)('A' + col)).ToString();
-            CellName.Text = cellName + (row + 1);
+
+            CellName.Text = getLetterName(col, row);
             Value.Text = s.GetCellValue(CellName.Text).ToString();
             if ( s.GetCellContents(CellName.Text).GetType() == typeof(Formula)) {
                 string withoutEquals = s.GetCellContents(CellName.Text).ToString();
@@ -76,8 +75,8 @@ public partial class MainPage : ContentPage
         foreach (string c in cells)
         {
 
-            //Value.Text = s.GetCellValue(c).ToString();
-            spreadsheetGrid.SetValue(col, row, s.GetCellValue(c).ToString());
+            (int, int) colrow = getColRow(c);
+            spreadsheetGrid.SetValue(colrow.Item1, colrow.Item2, s.GetCellValue(c).ToString());
 
         }
     }
@@ -112,14 +111,17 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private string getLetterName(int col, int row)
-    {
+    private string getLetterName(int col, int row) {
         string letter = ((char)('A' + col)).ToString();
         string letterNumber = letter + (row + 1);
         return letterNumber;
     }
-    private (int col, int row) getColRow(string letterNumber)
-    {
 
+    private (int col, int row) getColRow(string letterNumber) {
+
+        int col = char.ToUpper(letterNumber[0]) - 'A';
+        int row = int.Parse(letterNumber.Substring(1)) - 1;
+
+        return (col, row);
     }
 }
