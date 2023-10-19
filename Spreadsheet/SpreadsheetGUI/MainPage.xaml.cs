@@ -70,9 +70,16 @@ public partial class MainPage : ContentPage
         spreadsheetGrid.GetSelection(out int col, out int row);
         string cellName = ((char)('A' + col)).ToString();
         CellName.Text = cellName + (row + 1);
-        s.SetContentsOfCell(CellName.Text, Contents.Text);
+        List<string> cells = s.SetContentsOfCell(CellName.Text, Contents.Text).ToList();
         Value.Text = s.GetCellValue(CellName.Text).ToString();
         spreadsheetGrid.SetValue(col, row,s.GetCellValue(CellName.Text).ToString() );
+        foreach (string c in cells)
+        {
+
+            //Value.Text = s.GetCellValue(c).ToString();
+            spreadsheetGrid.SetValue(col, row, s.GetCellValue(c).ToString());
+
+        }
     }
     /// <summary>
     /// Opens any file as text and prints its contents.
@@ -103,5 +110,16 @@ public partial class MainPage : ContentPage
             Console.WriteLine("Error opening file:");
             Console.WriteLine(ex);
         }
+    }
+
+    private string getLetterName(int col, int row)
+    {
+        string letter = ((char)('A' + col)).ToString();
+        string letterNumber = letter + (row + 1);
+        return letterNumber;
+    }
+    private (int col, int row) getColRow(string letterNumber)
+    {
+
     }
 }
