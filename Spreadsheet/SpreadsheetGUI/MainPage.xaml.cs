@@ -1,5 +1,6 @@
 ﻿using SS;
 using SpreadsheetUtilities;
+using System.Threading.Channels;
 
 namespace SpreadsheetGUI;
 
@@ -60,25 +61,47 @@ public partial class MainPage : ContentPage
      
     }
 
-    private void NewClicked(Object sender, EventArgs e)
+    private async void NewClicked(Object sender, EventArgs e)
     {
-        spreadsheetGrid.Clear();
+        bool save = await DisplayAlert("Warning: Any unsaved data will be lost", "Save your work?", "Save", "Cancel");
+        if (save)
+        {
+            spreadsheetGrid.Clear();
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var subFolderPath = Path.Combine(path, filePath.Text);
+            Console.WriteLine(subFolderPath);
+            s.Save(subFolderPath);
+        }
+        else
+        {
+            //do nothing
+        }
     }
     private void OnCompleted(Object sender, EventArgs e) {
         
         spreadsheetGrid.GetSelection(out int col, out int row);
         string cellName = ((char)('A' + col)).ToString();
         CellName.Text = cellName + (row + 1);
-        List<string> cells = s.SetContentsOfCell(CellName.Text, Contents.Text).ToList();
-        Value.Text = s.GetCellValue(CellName.Text).ToString();
-        spreadsheetGrid.SetValue(col, row,s.GetCellValue(CellName.Text).ToString() );
-        foreach (string c in cells)
-        {
+        try {
+            List<string> cells = s.SetContentsOfCell(CellName.Text, Contents.Text).ToList();
+            Value.Text = s.GetCellValue(CellName.Text).ToString();
 
-            (int, int) colrow = getColRow(c);
-            spreadsheetGrid.SetValue(colrow.Item1, colrow.Item2, s.GetCellValue(c).ToString());
+            spreadsheetGrid.SetValue(col, row, s.GetCellValue(CellName.Text).ToString());
 
+            foreach (string c in cells) {
+
+                (int, int) colrow = getColRow(c);
+                spreadsheetGrid.SetValue(colrow.Item1, colrow.Item2, s.GetCellValue(c).ToString());
+
+            }
         }
+        catch(FormulaFormatException) {
+
+            DisplayAlert("There is a problem with this formula", "Please check your formula","OK" );
+        }
+        
+        
+            
     }
     /// <summary>
     /// Opens any file as text and prints its contents.
@@ -108,6 +131,22 @@ public partial class MainPage : ContentPage
         {
             Console.WriteLine("Error opening file:");
             Console.WriteLine(ex);
+        }
+    }
+
+    /// <summary>
+    /// Opens any file as text and prints its contents.
+    /// Note the use of async and await, concepts we will learn more about
+    /// later this semester.
+    /// </summary>
+    private async void SaveClicked(Object sender, EventArgs e) {
+        try {
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var subFolderPath = Path.Combine(path, filePath.Text);
+            Console.WriteLine(subFolderPath);
+            s.Save(subFolderPath);
+        } catch (SpreadsheetReadWriteException) {
+            await DisplayAlert("There was a problem saving", "Please check your formula", "OK");
         }
     }
 
