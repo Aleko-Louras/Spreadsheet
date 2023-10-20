@@ -7,9 +7,15 @@
         <MenuBarItem Text="File">
             <MenuFlyoutItem Text="New" Clicked="NewClicked" />
             <MenuFlyoutItem Text="Open" Clicked="OpenClicked" />
-             <MenuFlyoutItem Text="Save" Clicked="SaveClicked" />
+            <MenuFlyoutItem Text="Save" Clicked="SaveClicked" />
 
         </MenuBarItem>
+        <MenuBarItem Text="Help">
+            <MenuFlyoutItem Text="SpreadsheetGUI Help"></MenuFlyoutItem>
+
+        </MenuBarItem>
+
+
     </ContentPage.MenuBarItems>
 
     <Grid RowDefinitions="40, *">
@@ -49,6 +55,7 @@
                 Placeholder="Enter a Save Location"
                 Text=""
                 Grid.Row="1"
+                Completed="FileNameCompleted"
                 />
                </Border>
                

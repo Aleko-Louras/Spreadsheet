@@ -1,24 +1,23 @@
 ﻿using SS;
 using SpreadsheetUtilities;
 using System.Threading.Channels;
+using Microsoft.Maui.Storage;
 
 namespace SpreadsheetGUI;
 
 /// <summary>
 /// Example of using a SpreadsheetGUI object
 /// </summary>
-public partial class MainPage : ContentPage
-{
-    Spreadsheet s = new Spreadsheet();
-   
+public partial class MainPage : ContentPage {
+    Spreadsheet s = new Spreadsheet(s => true, s => s.ToUpper(), "ps6");
+
 
     /// <summary>
     /// Constructor for the demo
     /// </summary>
-	public MainPage()
-    {
+    public MainPage() {
         InitializeComponent();
-        
+
 
         // This an example of registering a method so that it is notified when
         // an event happens.  The SelectionChanged event is declared with a
@@ -30,55 +29,48 @@ public partial class MainPage : ContentPage
     }
 
 
-    private void displaySelection(ISpreadsheetGrid grid)
-    {
+    private void displaySelection(ISpreadsheetGrid grid) {
         Contents.Focus();
-  
+
         spreadsheetGrid.GetSelection(out int col, out int row);
         spreadsheetGrid.GetValue(col, row, out string value);
         Contents.Text = value;
-        
-        if (value == "")
-        {
+
+        if (value == "") {
             Contents.Text = "";
             spreadsheetGrid.GetValue(col, row, out value);
             CellName.Text = getLetterName(col, row);
             Value.Text = "";
-        }
-        else {
+        } else {
 
             CellName.Text = getLetterName(col, row);
             Value.Text = s.GetCellValue(CellName.Text).ToString();
-            if ( s.GetCellContents(CellName.Text).GetType() == typeof(Formula)) {
+            if (s.GetCellContents(CellName.Text).GetType() == typeof(Formula)) {
                 string withoutEquals = s.GetCellContents(CellName.Text).ToString();
                 string withEquals = "=" + withoutEquals;
                 Contents.Text = withEquals;
                 Value.Text = s.GetCellValue(CellName.Text).ToString();
 
             }
-            
+
         }
-     
+
     }
 
-    private async void NewClicked(Object sender, EventArgs e)
-    {
+    private async void NewClicked(Object sender, EventArgs e) {
         bool save = await DisplayAlert("Warning: Any unsaved data will be lost", "Save your work?", "Save", "Cancel");
-        if (save)
-        {
+        if (save) {
             spreadsheetGrid.Clear();
             var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var subFolderPath = Path.Combine(path, filePath.Text);
             Console.WriteLine(subFolderPath);
             s.Save(subFolderPath);
-        }
-        else
-        {
+        } else {
             //do nothing
         }
     }
     private void OnCompleted(Object sender, EventArgs e) {
-        
+
         spreadsheetGrid.GetSelection(out int col, out int row);
         string cellName = ((char)('A' + col)).ToString();
         CellName.Text = cellName + (row + 1);
@@ -94,44 +86,49 @@ public partial class MainPage : ContentPage
                 spreadsheetGrid.SetValue(colrow.Item1, colrow.Item2, s.GetCellValue(c).ToString());
 
             }
-        }
-        catch(FormulaFormatException) {
+        } catch (FormulaFormatException) {
 
-            DisplayAlert("There is a problem with this formula", "Please check your formula","OK" );
+            DisplayAlert("There is a problem with this formula", "Please check your formula", "OK");
         }
-        
-        
-            
     }
+
     /// <summary>
     /// Opens any file as text and prints its contents.
     /// Note the use of async and await, concepts we will learn more about
     /// later this semester.
     /// </summary>
-    private async void OpenClicked(Object sender, EventArgs e)
-    {
-        try
-        {
+    private async void OpenClicked(Object sender, EventArgs e) {
+        try {
             FileResult fileResult = await FilePicker.Default.PickAsync();
-            if (fileResult != null)
-            {
-        Console.WriteLine( "Successfully chose file: " + fileResult.FileName );
-        // for windows, replace Console.WriteLine statements with:
-        //System.Diagnostics.Debug.WriteLine( ... );
+            if (fileResult != null) {
+                Console.WriteLine("Successfully chose file: " + fileResult.FileName);
+                // for windows, replace Console.WriteLine statements with:
+                //System.Diagnostics.Debug.WriteLine( ... );
+                 s = new Spreadsheet(fileResult.FullPath, s=> true , s => s.ToUpper(), "ps6"); // TODO: fix validator
 
-        string fileContents = File.ReadAllText(fileResult.FullPath);
+                spreadsheetGrid.Clear();
+
+                List<string> newCellNames = s.GetNamesOfAllNonemptyCells().ToList();
+                foreach (string cellName in newCellNames) {
+                    (int, int) position = getColRow(cellName);
+                    spreadsheetGrid.SetValue(position.Item1, position.Item2, s.GetCellValue(cellName).ToString());
+                }
+                filePath.Text = fileResult.FileName;
+
+                string fileContents = File.ReadAllText(fileResult.FullPath);
                 Console.WriteLine("First 100 file chars:\n" + fileContents.Substring(0, 100));
-            }
-            else
-            {
+            } else {
                 Console.WriteLine("No file selected.");
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             Console.WriteLine("Error opening file:");
             Console.WriteLine(ex);
         }
+    }
+
+    private void FileNameCompleted(Object sender, EventArgs e) {
+        string filePathWithExtension = filePath.Text + ".sprd";
+        filePath.Text = filePathWithExtension;
     }
 
     /// <summary>
@@ -143,7 +140,6 @@ public partial class MainPage : ContentPage
         try {
             var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var subFolderPath = Path.Combine(path, filePath.Text);
-            Console.WriteLine(subFolderPath);
             s.Save(subFolderPath);
         } catch (SpreadsheetReadWriteException) {
             await DisplayAlert("There was a problem saving", "Please check your formula", "OK");
