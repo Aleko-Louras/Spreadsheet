@@ -18,10 +18,33 @@
 
     </ContentPage.MenuBarItems>
 
-    <Grid RowDefinitions="60,60,60, *">
+    <Grid RowDefinitions="60,60,60,60, *">
+        <HorizontalStackLayout>
+            <Label
+                Text="Spreadsheet Name:"
+                VerticalTextAlignment="Center"
+                TextDecorations="Underline"
+                FontSize="Title"
+                Padding="10"
+                />
+            <Border StrokeThickness="2"
+                Stroke="#000"
+                Grid.Row="0">
+                   
+                <Entry
+                x:Name="filePath"
+                Placeholder="Enter a filename"
+                Text=""
+                Grid.Row="1"
+                Completed="FileNameCompleted"
+                />
+        </Border>
+
+        </HorizontalStackLayout>
+        
 
         <HorizontalStackLayout
-            Grid.Row="0">
+            Grid.Row="1">
 
             <Label
                 Text="Cell Name:"
@@ -39,26 +62,10 @@
             Padding="10"
             VerticalOptions="Center"/>
 
-            
-
-
-
-            <Border StrokeThickness="7"
-                   Stroke="#000" >
-                <Entry
-                x:Name="filePath"
-                Placeholder="Enter a Save Location"
-                Text=""
-                Grid.Row="1"
-                Completed="FileNameCompleted"
-                />
-            </Border>
-
-
         </HorizontalStackLayout>
 
         <HorizontalStackLayout
-            Grid.Row="1">
+            Grid.Row="2">
 
             <Label
                 Text="Value:"
@@ -80,7 +87,7 @@
         </HorizontalStackLayout>
 
         <HorizontalStackLayout
-            Grid.Row="2">
+            Grid.Row="3">
 
             <Label
                 Text="Contents:"
@@ -100,6 +107,16 @@
                 Grid.Row="1"
                 Completed="OnCompleted"
                 />
+            <Button
+                Text="Set"
+                Padding="20"
+                BackgroundColor="Firebrick"
+                CornerRadius="10"
+                >
+                
+
+
+            </Button>
 
 
         </HorizontalStackLayout>
@@ -108,7 +125,7 @@
 
         <SS:SpreadsheetGrid
             x:Name="spreadsheetGrid"
-            Grid.Row="3"/>
+            Grid.Row="4"/>
 
     </Grid>
 
