@@ -11,43 +11,38 @@
 
         </MenuBarItem>
         <MenuBarItem Text="Help">
-            <MenuFlyoutItem Text="SpreadsheetGUI Help"></MenuFlyoutItem>
+
 
         </MenuBarItem>
 
 
     </ContentPage.MenuBarItems>
 
-    <Grid RowDefinitions="40, *">
-        
-        <HorizontalStackLayout>
-            <Border StrokeThickness="7"
-                   Stroke="#000000" >
-                <Label
-                x:Name="CellName"
-                Text="A1"
-                Grid.Row="1"
-                Padding="40"/>
-            </Border>
-          
-            <Border StrokeThickness="7"
-                   Stroke="#000" >
-                <Entry
-                x:Name="Contents"
-                Placeholder="Enter text"
-                Text=""
-                Grid.Row="1"
-                Completed="OnCompleted"
+    <Grid RowDefinitions="60,60,60, *">
+
+        <HorizontalStackLayout
+            Grid.Row="0">
+
+            <Label
+                Text="Cell Name:"
+                VerticalTextAlignment="Center"
+                TextDecorations="Underline"
+                FontSize="Title"
+                Padding="10"
                 />
-               </Border>
-            <Border StrokeThickness="7"
-                   Stroke="#000" >
-                <Label
-                x:Name="Value"
-                Text="Value"
-                Grid.Row="1"
-                Padding="40"/>
-               </Border>
+
+            <Label
+            x:Name="CellName"
+            Text="A1"
+            FontSize="Title"
+            
+            Padding="10"
+            VerticalOptions="Center"/>
+
+            
+
+
+
             <Border StrokeThickness="7"
                    Stroke="#000" >
                 <Entry
@@ -57,16 +52,65 @@
                 Grid.Row="1"
                 Completed="FileNameCompleted"
                 />
-               </Border>
-               
+            </Border>
+
 
         </HorizontalStackLayout>
+
+        <HorizontalStackLayout
+            Grid.Row="1">
+
+            <Label
+                Text="Value:"
+                VerticalTextAlignment="Center"
+                TextDecorations="Underline"
+                FontSize="Title"
+                Padding="10"
+                />
+
+
+            <Label
+            x:Name="Value"
+            
+            FontSize="Title"
+            Grid.Row="1"
+            Padding="40"/>
+
+
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout
+            Grid.Row="2">
+
+            <Label
+                Text="Contents:"
+                VerticalTextAlignment="Center"
+                TextDecorations="Underline"
+                FontSize="Title"
+                Padding="10"
+                />
+
+
+
+            <Entry
+                x:Name="Contents"
+                Placeholder="Enter text"
+                FontSize="Title"
+                Text=""
+                Grid.Row="1"
+                Completed="OnCompleted"
+                />
+
+
+        </HorizontalStackLayout>
+
         
+
         <SS:SpreadsheetGrid
             x:Name="spreadsheetGrid"
-            Grid.Row="2"/>
-        
+            Grid.Row="3"/>
+
     </Grid>
-    
+
 </ContentPage>
 

@@ -142,7 +142,7 @@ public partial class MainPage : ContentPage {
             var subFolderPath = Path.Combine(path, filePath.Text);
             s.Save(subFolderPath);
         } catch (SpreadsheetReadWriteException) {
-            await DisplayAlert("There was a problem saving", "Please check your formula", "OK");
+            await DisplayAlert("There was a problem saving", "Please check your filename", "OK");
         }
     }
 
