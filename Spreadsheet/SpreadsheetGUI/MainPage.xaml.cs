@@ -70,26 +70,11 @@ public partial class MainPage : ContentPage {
         }
     }
     private void OnCompleted(Object sender, EventArgs e) {
+        SetContents();
+    }
 
-        spreadsheetGrid.GetSelection(out int col, out int row);
-        string cellName = ((char)('A' + col)).ToString();
-        CellName.Text = cellName + (row + 1);
-        try {
-            List<string> cells = s.SetContentsOfCell(CellName.Text, Contents.Text).ToList();
-            Value.Text = s.GetCellValue(CellName.Text).ToString();
-
-            spreadsheetGrid.SetValue(col, row, s.GetCellValue(CellName.Text).ToString());
-
-            foreach (string c in cells) {
-
-                (int, int) colrow = getColRow(c);
-                spreadsheetGrid.SetValue(colrow.Item1, colrow.Item2, s.GetCellValue(c).ToString());
-
-            }
-        } catch (FormulaFormatException) {
-
-            DisplayAlert("There is a problem with this formula", "Please check your formula", "OK");
-        }
+    private void SetClicked(Object sender, EventArgs e) {
+        SetContents();
     }
 
     /// <summary>
@@ -98,6 +83,15 @@ public partial class MainPage : ContentPage {
     /// later this semester.
     /// </summary>
     private async void OpenClicked(Object sender, EventArgs e) {
+        if (s.Changed) {
+            bool save = await DisplayAlert("Warning: Any unsaved data will be lost", "Save your work?", "Save", "Cancel");
+            if (save) {
+                var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var subFolderPath = Path.Combine(path, filePath.Text);
+                Console.WriteLine(subFolderPath);
+                s.Save(subFolderPath);
+            }
+        }
         try {
             FileResult fileResult = await FilePicker.Default.PickAsync();
             if (fileResult != null) {
@@ -146,6 +140,15 @@ public partial class MainPage : ContentPage {
         }
     }
 
+    private async void HelpClicked(Object sender, EventArgs e) {
+        await DisplayAlert("Spreadsheet Help", "Press return to enter a value. " +
+                           "You can enter formula with lower or upercase letters" +
+                           "You may also hightlight a cell using the highlight button", "OK");
+    }
+    private void HighlightClicked(Object sender, EventArgs e) {
+        
+    }
+
     private string getLetterName(int col, int row) {
         string letter = ((char)('A' + col)).ToString();
         string letterNumber = letter + (row + 1);
@@ -158,5 +161,27 @@ public partial class MainPage : ContentPage {
         int row = int.Parse(letterNumber.Substring(1)) - 1;
 
         return (col, row);
+    }
+
+    private void SetContents() {
+        spreadsheetGrid.GetSelection(out int col, out int row);
+        string cellName = ((char)('A' + col)).ToString();
+        CellName.Text = cellName + (row + 1);
+        try {
+            List<string> cells = s.SetContentsOfCell(CellName.Text, Contents.Text).ToList();
+            Value.Text = s.GetCellValue(CellName.Text).ToString();
+
+            spreadsheetGrid.SetValue(col, row, s.GetCellValue(CellName.Text).ToString());
+
+            foreach (string c in cells) {
+
+                (int, int) colrow = getColRow(c);
+                spreadsheetGrid.SetValue(colrow.Item1, colrow.Item2, s.GetCellValue(c).ToString());
+
+            }
+        } catch (FormulaFormatException) {
+
+            DisplayAlert("There is a problem with this formula", "Please check your formula", "OK");
+        }
     }
 }

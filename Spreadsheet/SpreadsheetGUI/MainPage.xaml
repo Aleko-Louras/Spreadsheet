@@ -11,7 +11,7 @@
 
         </MenuBarItem>
         <MenuBarItem Text="Help">
-
+            <MenuFlyoutItem Text="Spreadsheet Help" Clicked="HelpClicked" />
 
         </MenuBarItem>
 
@@ -27,18 +27,17 @@
                 FontSize="Title"
                 Padding="10"
                 />
-            <Border StrokeThickness="2"
-                Stroke="#000"
-                Grid.Row="0">
+            
                    
-                <Entry
-                x:Name="filePath"
-                Placeholder="Enter a filename"
-                Text=""
-                Grid.Row="1"
-                Completed="FileNameCompleted"
-                />
-        </Border>
+            <Entry
+            x:Name="filePath"
+            Placeholder="Enter a filename"
+            FontSize="Title"
+            Text=""
+            Grid.Row="1"
+            Completed="FileNameCompleted"
+            />
+
 
         </HorizontalStackLayout>
         
@@ -87,7 +86,8 @@
         </HorizontalStackLayout>
 
         <HorizontalStackLayout
-            Grid.Row="3">
+            Grid.Row="3"
+            Spacing="10">
 
             <Label
                 Text="Contents:"
@@ -109,13 +109,20 @@
                 />
             <Button
                 Text="Set"
-                Padding="20"
-                BackgroundColor="Firebrick"
+                Padding="30"
+                BackgroundColor="#478DF7"
                 CornerRadius="10"
+                Released="SetClicked"
                 >
-                
+            </Button>
 
-
+             <Button
+                Text="Highlight"
+                Padding="30"
+                BackgroundColor="DarkGoldenrod"
+                CornerRadius="10"
+                Released="HighlightClicked"
+                >
             </Button>
 
 

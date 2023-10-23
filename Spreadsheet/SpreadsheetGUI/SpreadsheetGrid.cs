@@ -201,6 +201,8 @@ public class SpreadsheetGrid : ScrollView, IDrawable, ISpreadsheetGrid
             return Col == a.Col && Row == a.Row;
         }
     }
+ 
+
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
