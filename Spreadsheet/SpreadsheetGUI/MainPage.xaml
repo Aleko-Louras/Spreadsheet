@@ -117,13 +117,25 @@
             </Button>
 
              <Button
-                Text="Highlight"
+                Text="Sum Selected Column"
                 Padding="30"
                 BackgroundColor="DarkGoldenrod"
                 CornerRadius="10"
-                Released="HighlightClicked"
+                Released="SumColumnClicked"
                 >
             </Button>
+           
+
+            <Button
+                Text="Sum Selected Row"
+                Padding="30"
+                BackgroundColor="DarkGoldenrod"
+                CornerRadius="10"
+                Released="SumRowClicked"
+                >
+            </Button>
+            
+
 
 
         </HorizontalStackLayout>

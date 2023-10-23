@@ -202,10 +202,7 @@ public class SpreadsheetGrid : ScrollView, IDrawable, ISpreadsheetGrid
         }
     }
 
-    public void DrawHighlight() {
-
-    }
- 
+   
 
 
     public void Draw(ICanvas canvas, RectF dirtyRect)

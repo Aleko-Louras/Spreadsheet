@@ -155,8 +155,32 @@ public partial class MainPage : ContentPage {
         //                   "You may also hightlight a cell using the highlight button", "OK");
         await Navigation.PushAsync(new HelpPage());
     }
-    private void HighlightClicked(Object sender, EventArgs e) {
+    private void SumColumnClicked(Object sender, EventArgs e) {
+        List<string> cells = s.GetNamesOfAllNonemptyCells().ToList();
+        double sum = 0;
+        spreadsheetGrid.GetSelection(out int col, out int row);
+        foreach(string cell in cells) {
+            if (cell[0] == col+'A' || cell[0] == 97 ) {
+                Console.WriteLine("Found an A");
+                sum += (double)s.GetCellValue(cell);
+                Contents.Text = sum.ToString();
+                SetContents();
+            }
+        }
         
+    }
+    private void SumRowClicked(Object sender, EventArgs e) {
+        List<string> cells = s.GetNamesOfAllNonemptyCells().ToList();
+        double sum = 0;
+        spreadsheetGrid.GetSelection(out int col, out int row);
+        foreach (string cell in cells) {
+            if ((cell.Substring(1) == (row + 1).ToString())) {
+                sum += (double)s.GetCellValue(cell);
+                Contents.Text = sum.ToString();
+                SetContents();
+            }
+        }
+
     }
 
     private string getLetterName(int col, int row) {
