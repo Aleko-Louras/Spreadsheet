@@ -2,6 +2,7 @@
 using SpreadsheetUtilities;
 using System.Threading.Channels;
 using Microsoft.Maui.Storage;
+using System.Text.RegularExpressions;
 
 namespace SpreadsheetGUI;
 
@@ -9,8 +10,16 @@ namespace SpreadsheetGUI;
 /// Example of using a SpreadsheetGUI object
 /// </summary>
 public partial class MainPage : ContentPage {
-    Spreadsheet s = new Spreadsheet(s => true, s => s.ToUpper(), "ps6");
+    private static string Normalizer(string name) {
+        return name.ToUpper();
+    }
 
+    private static bool Validator(string name) {
+        string pattern = "^[A-Z][1-9][1-9]?$";
+        return Regex.IsMatch(name, pattern);
+    }
+    Spreadsheet s = new Spreadsheet(Validator, Normalizer, "ps6");
+    
 
     /// <summary>
     /// Constructor for the demo
@@ -141,9 +150,10 @@ public partial class MainPage : ContentPage {
     }
 
     private async void HelpClicked(Object sender, EventArgs e) {
-        await DisplayAlert("Spreadsheet Help", "Press return to enter a value. " +
-                           "You can enter formula with lower or upercase letters" +
-                           "You may also hightlight a cell using the highlight button", "OK");
+        //await DisplayAlert("Spreadsheet Help", "Press return to enter a value. " +
+        //                   "You can enter formula with lower or upercase letters" +
+        //                   "You may also hightlight a cell using the highlight button", "OK");
+        await Navigation.PushAsync(new HelpPage());
     }
     private void HighlightClicked(Object sender, EventArgs e) {
         
@@ -168,6 +178,10 @@ public partial class MainPage : ContentPage {
         string cellName = ((char)('A' + col)).ToString();
         CellName.Text = cellName + (row + 1);
         try {
+            object returned = s.SetContentsOfCell(CellName.Text, Contents.Text);
+            if (returned is FormulaError) {
+                DisplayAlert("There is a problem with this formula", "Please check your formula", "OK");
+            }
             List<string> cells = s.SetContentsOfCell(CellName.Text, Contents.Text).ToList();
             Value.Text = s.GetCellValue(CellName.Text).ToString();
 
@@ -182,6 +196,10 @@ public partial class MainPage : ContentPage {
         } catch (FormulaFormatException) {
 
             DisplayAlert("There is a problem with this formula", "Please check your formula", "OK");
+        } catch (CircularException) {
+            DisplayAlert("There is a problem with this formula", "Please check your formula", "OK");
         }
     }
+
+    
 }

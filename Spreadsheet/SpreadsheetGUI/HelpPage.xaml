@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SpreadsheetGUI.HelpPage"
+             Title="HelpPage">
+    <VerticalStackLayout>
+        <Label 
+            Text="How to use this spreadsheet:
+            1. Add Contents to a Cell, enter the contents of the cell into the contents box
+            and press return or 
+            the file menu. "
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</ContentPage>
