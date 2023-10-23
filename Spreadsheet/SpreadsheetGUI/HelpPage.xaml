@@ -30,7 +30,7 @@
             Padding="10"
             FontSize="Large"/>
         <Label
-            Text="4. Notice the Set and Highlight buttons. If you click on set, you can manually set the value and contents without pressing enter/return. If you click Highlight, the selected cell (notice the black border around the cell) will be highlighted."
+            Text="4. Notice the Set and Highlight buttons. If you click on set, you can manually set the value and contents without pressing enter/return. If you click Sum selected row or column, wherever the focused cell is, is where the sum of the row and column it is will be."
             VerticalOptions="StartAndExpand" 
             HorizontalOptions="StartAndExpand"
             Padding="10"
