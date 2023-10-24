@@ -1,4 +1,8 @@
 ﻿// Written by Joe Zachary and Travis Martin for CS 3500, September 2011, 2023
+// Modified by Aleko Louras and Quinn Pritchett, October 2023
+//
+// A Spreadsheet Grid to display the contents of a Spreadsheet
+//
 using Font = Microsoft.Maui.Graphics.Font;
 using SizeF = Microsoft.Maui.Graphics.SizeF;
 using PointF = Microsoft.Maui.Graphics.PointF;

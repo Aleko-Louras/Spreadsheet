@@ -119,7 +119,7 @@
              <Button
                 Text="Sum Selected Column"
                 Padding="30"
-                BackgroundColor="DarkGoldenrod"
+                BackgroundColor="LimeGreen"
                 CornerRadius="10"
                 Released="SumColumnClicked"
                 >
@@ -129,7 +129,7 @@
             <Button
                 Text="Sum Selected Row"
                 Padding="30"
-                BackgroundColor="DarkGoldenrod"
+                BackgroundColor="LimeGreen"
                 CornerRadius="10"
                 Released="SumRowClicked"
                 >

@@ -10,42 +10,57 @@
             VerticalOptions="StartAndExpand" 
             HorizontalOptions="StartAndExpand"
             FontSize="Title"/>
+        <Label 
+            Text="Please note: All Spreadsheets are saved to the users Documents folder"
+            
+            VerticalOptions="StartAndExpand" 
+            HorizontalOptions="StartAndExpand"
+            FontSize="Title"/>
+
         <Label
-            Text="1.Select a cell. You can click on individual cell"
+            Text="1.Name your Spreadsheet by entering a filename in the Spreadsheet Name field"
             VerticalOptions="StartAndExpand" 
             HorizontalOptions="StartAndExpand"
             FontSize="Large"
             Padding="10"/>
         <Label
-            Text="2. You will see the cell name, value box, and contents box. Enter the preferred contents of the cell(formula, letters, words, numbers)."
+            Text="2.Select a cell. You can click on individual cell"
+            VerticalOptions="StartAndExpand" 
+            HorizontalOptions="StartAndExpand"
+            FontSize="Large"
+            Padding="10"/>
+        <Label
+            Text="3. You will see the cell name, value box, and contents box. Enter the preferred contents of the cell(formula, letters, words, numbers)."
             VerticalOptions="StartAndExpand" 
             HorizontalOptions="StartAndExpand"
             Padding="10"
             FontSize="Large"/>
 
         <Label
-            Text=" 3. Notice the value of the cell updates according to the contents, which is stays the same exactly how it was entered. "
+            Text=" 4. Notice the value of the cell updates according to the contents, which is stays the same exactly how it was entered. "
             VerticalOptions="StartAndExpand" 
             HorizontalOptions="StartAndExpand"
             Padding="10"
             FontSize="Large"/>
         <Label
-            Text="4. Notice the Set button. If you click on set, you can manually set the value and contents without pressing enter/return."
+            Text="5. Notice the Set button. If you click on set, you can manually set the value and contents without pressing enter/return."
             VerticalOptions="StartAndExpand" 
             HorizontalOptions="StartAndExpand"
             Padding="10"
             FontSize="Large"/>
         <Label
-            Text="5. Notice the Sum column/row buttons. If you click Sum selected row or column, the sum of that row or column will be set as the contents of the selected cell."
+            Text="6. Notice the Sum column/row buttons. If you click Sum selected row or column, the sum of that row or column will be set as the contents of the selected cell."
             VerticalOptions="StartAndExpand" 
             HorizontalOptions="StartAndExpand"
             Padding="10"
             FontSize="Large"/>
         <Label
-            Text="6. Notice the menu bar on the top left. If you select file, a dropdown menu appears. Select New to open a new empty spreadsheet that replaces the current displayed spreadsheet. Select open to open a .sprd file in the system directory to a spreadsheet in the GUI. Select Save to write the current displayed spreadsheet to a .sprd file in the system directory documents folder. Selecting close will quit the application.  "
+            Text="7. Notice the menu bar on the top left. If you select file, a dropdown menu appears. Select New to open a new empty spreadsheet that replaces the current displayed spreadsheet. Select Open to open a .sprd file in the system directory to a spreadsheet in the GUI. Select Save to write the current displayed spreadsheet to a .sprd file in the system directory documents folder. Selecting close will quit the application.  "
             VerticalOptions="StartAndExpand" 
             HorizontalOptions="StartAndExpand"
             Padding="10"
             FontSize="Large"/>
-         </VerticalStackLayout>
+
+            </VerticalStackLayout>
+
 </ContentPage>
